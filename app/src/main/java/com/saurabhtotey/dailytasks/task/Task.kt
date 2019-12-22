@@ -1,14 +1,4 @@
-package com.saurabhtotey.dailytasks
-
-/**
- * An enumeration of the different types of ways a task can be filled out
- * CHECKBOX should be used for boolean values
- * POSITIVE_INTEGER should be used for tasks that take in a positive integer that allows 0
- * NONE should be used for tasks that their completion off of some other criteria (eg. sub-tasks)
- */
-enum class FormType {
-	CHECKBOX, POSITIVE_INTEGER, NONE
-}
+package com.saurabhtotey.dailytasks.task
 
 /**
  * An enumeration of all the daily tasks I must complete
@@ -28,8 +18,8 @@ enum class FormType {
  * A positive integer will record values as its integer
  * An empty form type (NONE) will record as always 0s
  *
- * TODO: consider storing task data as doubles or something
- * TODO: consider having a class that represents task data that pairs the numerical value with a day or date or time or something so that the data object can be passed in a list to evaluateIsCompleted so evaluation can also consider completion date
+ * TODO: consider storing task data as doubles instead of ints
+ * TODO: consider having a class that represents task data that pairs the numerical value with a date so that the data object can be passed in a list to evaluateIsCompleted so evaluation can also consider date in addition to numerical value
  */
 enum class Task(val displayName: String, val description: String, val formType: FormType = FormType.CHECKBOX, val formDescription: String = "", val evaluateIsCompleted: (Array<Int>) -> Boolean? = { it[0] > 0 }, val subTasks: Array<Task> = arrayOf()) {
 	MEDITATE(
