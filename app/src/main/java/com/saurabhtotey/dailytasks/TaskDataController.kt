@@ -1,5 +1,6 @@
 package com.saurabhtotey.dailytasks
 
+import android.content.Context
 import com.saurabhtotey.dailytasks.task.Task
 import org.json.JSONArray
 import org.json.JSONObject
@@ -11,9 +12,18 @@ import java.util.*
  * A singleton that acts as a controller if taken in an MVC context
  * Manages data flow and recording data to file and reading data from file
  */
-object TaskDataController {
+class TaskDataController private constructor(context: Context) {
 
-	private val file = File("SaurabhToteyTaskData.json")
+	companion object {
+		@Volatile private var INSTANCE: TaskDataController? = null
+		fun get(context: Context): TaskDataController {
+			return INSTANCE ?: synchronized(this) {
+				INSTANCE ?: TaskDataController(context).also { INSTANCE = it }
+			}
+		}
+	}
+
+	private val file = File(context.filesDir, "TaskData.json")
 	private var fileData: JSONArray
 	private var currentDayTasksData: JSONObject = JSONObject()
 
