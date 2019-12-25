@@ -1,4 +1,4 @@
-package com.saurabhtotey.dailytasks.task
+package com.saurabhtotey.dailytasks.model
 
 /**
  * An enumeration of all the daily tasks I must complete

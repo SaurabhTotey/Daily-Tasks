@@ -1,4 +1,4 @@
-package com.saurabhtotey.dailytasks.task
+package com.saurabhtotey.dailytasks.model
 
 /**
  * An enumeration of the different types of ways a task can be filled out

@@ -1,7 +1,7 @@
 package com.saurabhtotey.dailytasks
 
 import android.content.Context
-import com.saurabhtotey.dailytasks.task.Task
+import com.saurabhtotey.dailytasks.model.Task
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -26,6 +26,7 @@ class TaskDataController private constructor(context: Context) {
 	private val file = File(context.filesDir, "TaskData.json")
 	private var fileData: JSONArray
 	private var currentDayTasksData: JSONObject = JSONObject()
+	var inflatedTask: Task? = null //The task that the user has tapped on that is showing its description in the view
 
 	/**
 	 * Parses the data file
