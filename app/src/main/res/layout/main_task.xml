@@ -10,7 +10,6 @@
 		android:layout_width="275dp"
 		android:layout_height="25dp"
 		android:gravity="center_vertical"
-		android:text="TASK TITLE GOES HERE"
 		android:textAppearance="@style/TextAppearance.AppCompat.Title" />
 
 	<RelativeLayout
@@ -19,11 +18,18 @@
 		android:layout_height="25dp"
 		android:layout_toEndOf="@id/TaskTitle" />
 
+	<TextView
+		android:id="@+id/TaskDescription"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_below="@id/TaskTitle"
+		android:visibility="gone" />
+
 	<ListView
 		android:id="@+id/SubTaskBox"
 		android:paddingStart="3dp"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:layout_below="@id/TaskTitle"/>
+		android:layout_below="@id/TaskDescription" />
 
 </RelativeLayout>

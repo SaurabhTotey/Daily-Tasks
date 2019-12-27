@@ -24,11 +24,12 @@ class TaskAdapter(context: Context) : ArrayAdapter<Task>(context, 0, TaskDataCon
 		val taskView = LayoutInflater
 			.from(this.context)
 			.inflate(
-				if (TaskDataController.get(this.context).inflatedTask == task) R.layout.main_task_inflated else R.layout.main_task,
+				if (TaskDataController.get(this.context).inflatedTask == task) R.layout.main_task else R.layout.main_task,
 				parent,
 				false
 			)
 
+		taskView.tag = task.name
 		taskView.findViewById<TextView>(R.id.TaskTitle).text = task.displayName
 		taskView.findViewById<TextView?>(R.id.TaskDescription)?.text = task.description
 
