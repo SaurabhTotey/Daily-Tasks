@@ -11,9 +11,13 @@ import java.util.*
 /**
  * A singleton that acts as a controller if taken in an MVC context
  * Manages data flow and recording data to file and reading data from file
+ * The context that is passed in is only used to initialize file IO: any correct context object should work
  */
 class TaskDataController private constructor(context: Context) {
 
+	/**
+	 * Handles ensuring that this class is a singleton
+	 */
 	companion object {
 		@Volatile private var INSTANCE: TaskDataController? = null
 		fun get(context: Context): TaskDataController {
@@ -26,7 +30,9 @@ class TaskDataController private constructor(context: Context) {
 	private val file = File(context.filesDir, "TaskData.json")
 	private var fileData: JSONArray
 	private var currentDayTasksData: JSONObject = JSONObject()
-	var inflatedTask: Task? = null //The task that the user has tapped on that is showing its description in the view
+
+	//The task that the user has tapped on that is showing its description in the view
+	var expandedTask: Task? = null
 
 	/**
 	 * Parses the data file
