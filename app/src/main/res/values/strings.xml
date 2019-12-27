@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Daily Tasks</string>
+    <string name="expand_sub_tasks_button_description">Expands sub-tasks for the current task.</string>
 </resources>

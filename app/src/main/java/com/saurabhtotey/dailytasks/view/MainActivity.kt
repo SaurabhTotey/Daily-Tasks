@@ -34,7 +34,7 @@ class MainActivity : AppCompatActivity() {
 		TaskDataController.get(this).getPrimaryTasks().forEach { task ->
 			val taskView = LayoutInflater.from(this).inflate(R.layout.task, taskContainer, false)
 			this.populateTaskView(taskView, task)
-			val subTaskContainer = taskView.findViewById<LinearLayout>(R.id.SubTaskView)
+			val subTaskContainer = taskView.findViewById<LinearLayout>(R.id.SubTaskContainer)
 			task.subTasks.forEach { subTask ->
 				//TODO: it probably would be best to make a separate subTask layout with different spacings so that everything lines up
 				val subTaskView = LayoutInflater.from(this).inflate(R.layout.task, subTaskContainer, false)
@@ -57,6 +57,23 @@ class MainActivity : AppCompatActivity() {
 		taskDescriptionView.text = task.description
 		taskView.setOnClickListener {
 			taskDescriptionView.visibility = if (taskDescriptionView.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+		}
+
+		if (task.subTasks.isNotEmpty()) {
+			val subTaskExpansionButton = taskView.findViewById<ImageButton>(R.id.ExpandSubTasksButton)
+			val subTaskContainer = taskView.findViewById<LinearLayout>(R.id.SubTaskContainer)
+			subTaskExpansionButton.visibility = View.VISIBLE
+			var isExpanded = false
+			subTaskExpansionButton.setOnClickListener() {
+				if (isExpanded) {
+					subTaskContainer.visibility = View.GONE
+					subTaskExpansionButton.setImageDrawable(this.resources.getDrawable(android.R.drawable.arrow_down_float, this.theme))
+				} else {
+					subTaskContainer.visibility = View.VISIBLE
+					subTaskExpansionButton.setImageDrawable(this.resources.getDrawable(android.R.drawable.arrow_up_float, this.theme))
+				}
+				isExpanded = !isExpanded
+			}
 		}
 
 		//TODO: link up form behaviour to TaskDataController (both for form initial value and for when form is interacted with)

@@ -6,12 +6,21 @@
 	android:layout_height="wrap_content"
 	android:padding="5dp">
 
+	<ImageButton
+		android:id="@+id/ExpandSubTasksButton"
+		android:layout_width="30dp"
+		android:layout_height="30dp"
+		android:contentDescription="@string/expand_sub_tasks_button_description"
+		android:src="@android:drawable/arrow_down_float"
+		android:visibility="invisible" />
+
 	<TextView
 		android:id="@+id/TaskTitle"
-		android:layout_width="275dp"
+		android:layout_width="245dp"
 		android:layout_height="25dp"
 		android:gravity="center_vertical"
-		android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+		android:textAppearance="@style/TextAppearance.AppCompat.Title"
+		android:layout_toEndOf="@+id/ExpandSubTasksButton"/>
 
 	<RelativeLayout
 		android:layout_width="150dp"
@@ -48,12 +57,13 @@
 		android:visibility="gone" />
 
 	<LinearLayout
-		android:id="@+id/SubTaskView"
+		android:id="@+id/SubTaskContainer"
 		tools:ignore="RtlSymmetry"
 		android:paddingStart="15dp"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:layout_below="@id/TaskDescription"
-		android:orientation="vertical" />
+		android:orientation="vertical"
+		android:visibility="gone" />
 
 </RelativeLayout>
