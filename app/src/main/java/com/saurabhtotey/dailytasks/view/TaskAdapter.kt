@@ -21,17 +21,11 @@ class TaskAdapter(context: Context) : ArrayAdapter<Task>(context, 0, TaskDataCon
 	override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
 		val task = this.getItem(position)!!
 
-		val taskView = LayoutInflater
-			.from(this.context)
-			.inflate(
-				if (TaskDataController.get(this.context).inflatedTask == task) R.layout.main_task else R.layout.main_task,
-				parent,
-				false
-			)
+		val taskView = LayoutInflater.from(this.context).inflate(R.layout.main_task, parent, false)
 
 		taskView.tag = task.name
 		taskView.findViewById<TextView>(R.id.TaskTitle).text = task.displayName
-		taskView.findViewById<TextView?>(R.id.TaskDescription)?.text = task.description
+		taskView.findViewById<TextView>(R.id.TaskDescription).text = task.description
 
 		//TODO: put in the sub tasks
 
