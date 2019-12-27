@@ -40,7 +40,7 @@ enum class Task(val displayName: String, val description: String, val formType: 
 		"times"
 	),
 	PRACTICE(
-		"Practice Musical Instrument(s)",
+		"Practice Piano",
 		"Spend at least 30 minutes practicing the piano. If possible, also practice cello.",
 		FormType.POSITIVE_INTEGER,
 		"minutes"

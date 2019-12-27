@@ -17,7 +17,7 @@ class MainActivity : AppCompatActivity() {
 		val listView = this.findViewById<ListView>(R.id.ListView)
 		listView.adapter = TaskAdapter(this)
 		listView.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
-			TaskDataController.get(this).inflatedTask = listView.adapter.getItem(position) as Task?
+			TaskDataController.get(this).inflatedTask = listView.adapter.getItem(position) as Task? //TODO: enable toggling
 			listView.invalidate() //forces listView to redraw
 		}
 	}

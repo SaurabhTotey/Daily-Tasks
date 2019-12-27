@@ -11,7 +11,7 @@
 		android:layout_height="25dp"
 		android:gravity="center_vertical"
 		android:text="TASK TITLE GOES HERE"
-		android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+		android:textAppearance="@style/TextAppearance.AppCompat.Title" />
 
 	<RelativeLayout
 		android:id="@+id/CompletionFormBox"
