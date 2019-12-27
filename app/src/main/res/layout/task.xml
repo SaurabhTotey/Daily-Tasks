@@ -4,7 +4,8 @@
 	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
-	android:padding="5dp" >
+	android:padding="5dp">
+	<!--TODO: selectability is janky with the number picker: it only works if the above RelativeLayout blocks descendants focusability, which prevents the number picker from being used-->
 
 	<TextView
 		android:id="@+id/TaskTitle"
@@ -14,10 +15,31 @@
 		android:textAppearance="@style/TextAppearance.AppCompat.Title" />
 
 	<RelativeLayout
-		android:id="@+id/CompletionFormBox"
 		android:layout_width="150dp"
 		android:layout_height="25dp"
-		android:layout_toEndOf="@id/TaskTitle" />
+		android:layout_toEndOf="@id/TaskTitle">
+
+		<TextView
+			android:id="@+id/TaskFormDescription"
+			android:layout_width="75dp"
+			android:layout_height="wrap_content"
+			android:layout_alignParentEnd="true" />
+
+		<NumberPicker
+			android:id="@+id/TaskNumberPicker"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_toStartOf="@+id/TaskFormDescription"
+			android:visibility="gone" />
+
+		<CheckBox
+			android:id="@+id/TaskCheckBox"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_toStartOf="@+id/TaskFormDescription"
+			android:visibility="gone" />
+
+	</RelativeLayout>
 
 	<TextView
 		android:id="@+id/TaskDescription"
@@ -27,7 +49,7 @@
 		android:visibility="gone" />
 
 	<ListView
-		android:id="@+id/SubTaskBox"
+		android:id="@+id/SubTaskListView"
 		tools:ignore="RtlSymmetry"
 		android:paddingStart="3dp"
 		android:layout_width="match_parent"

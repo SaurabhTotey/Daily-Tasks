@@ -5,9 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.CheckBox
+import android.widget.NumberPicker
 import android.widget.TextView
 import com.saurabhtotey.dailytasks.R
 import com.saurabhtotey.dailytasks.TaskDataController
+import com.saurabhtotey.dailytasks.model.FormType
 import com.saurabhtotey.dailytasks.model.Task
 
 /**
@@ -20,23 +23,34 @@ import com.saurabhtotey.dailytasks.model.Task
 class TaskAdapter(context: Context) : ArrayAdapter<Task>(context, 0, TaskDataController.get(context).getPrimaryTasks()) {
 
 	/**
+	 * Populates the given task view with data from the given task
+	 */
+	private fun populateTaskView(taskView: View, task: Task) {
+		taskView.tag = task.name
+		taskView.findViewById<TextView>(R.id.TaskTitle).text = task.displayName
+		taskView.findViewById<TextView>(R.id.TaskDescription).text = task.description
+		if (task.formType == FormType.CHECKBOX) {
+			taskView.findViewById<CheckBox>(R.id.TaskCheckBox).visibility = View.VISIBLE
+		} else if (task.formType == FormType.POSITIVE_INTEGER) {
+			taskView.findViewById<NumberPicker>(R.id.TaskNumberPicker).visibility = View.VISIBLE
+		}
+		taskView.findViewById<TextView>(R.id.TaskFormDescription).text = task.formDescription
+	}
+
+	/**
 	 * Makes a view for the item at the given position
 	 */
 	override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
 		//Gets the task and inflates a main_task layout for it
 		val task = this.getItem(position)!!
-		val taskView = LayoutInflater.from(this.context).inflate(R.layout.main_task, parent, false)
+		val taskView = LayoutInflater.from(this.context).inflate(R.layout.task, parent, false)
 
 		//TODO: use view holder pattern (do this last once everything else is done); see https://dzone.com/articles/optimizing-your-listview
 
-		//Populates the main_task view with the task's information
-		taskView.tag = task.name
-		taskView.findViewById<TextView>(R.id.TaskTitle).text = task.displayName
-		taskView.findViewById<TextView>(R.id.TaskDescription).text = task.description
+		//Populates the view with task information
+		this.populateTaskView(taskView, task)
 
 		//TODO: put in the sub tasks
-
-		//TODO: put in completion forms for primary and sub tasks
 
 		return taskView
 	}
