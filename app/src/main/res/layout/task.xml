@@ -5,7 +5,6 @@
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
 	android:padding="5dp">
-	<!--TODO: selectability is janky with the number picker: it only works if the above RelativeLayout blocks descendants focusability, which prevents the number picker from being used-->
 
 	<TextView
 		android:id="@+id/TaskTitle"
@@ -48,12 +47,13 @@
 		android:layout_below="@id/TaskTitle"
 		android:visibility="gone" />
 
-	<ListView
+	<LinearLayout
 		android:id="@+id/SubTaskListView"
 		tools:ignore="RtlSymmetry"
 		android:paddingStart="3dp"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:layout_below="@id/TaskDescription" />
+		android:layout_below="@id/TaskDescription"
+		android:orientation="vertical" />
 
 </RelativeLayout>

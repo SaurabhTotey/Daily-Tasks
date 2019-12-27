@@ -31,9 +31,6 @@ class TaskDataController private constructor(context: Context) {
 	private var fileData: JSONArray
 	private var currentDayTasksData: JSONObject = JSONObject()
 
-	//The task that the user has tapped on that is showing its description in the view
-	var expandedTask: Task? = null
-
 	/**
 	 * Parses the data file
 	 * Creates data file if it doesn't exist

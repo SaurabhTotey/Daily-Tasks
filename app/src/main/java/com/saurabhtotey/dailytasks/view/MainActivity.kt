@@ -2,19 +2,22 @@ package com.saurabhtotey.dailytasks.view
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.AdapterView
-import android.widget.ListView
-import android.widget.RelativeLayout
-import android.widget.TextView
+import android.widget.*
 import com.saurabhtotey.dailytasks.R
 import com.saurabhtotey.dailytasks.TaskDataController
+import com.saurabhtotey.dailytasks.model.FormType
 import com.saurabhtotey.dailytasks.model.Task
 
 /**
  * The main view for this application
  * In its most basic essence, shows a list of tasks
- * Handles the listView and expanding/collapsing task descriptions when tasks get selected
+ *
+ * Tasks are displayed as titles, descriptions, and a form field for marking some sort of completion info
+ * Tasks also display with an indented list of sub-tasks that the parent task may consider when evaluating completion
+ * TODO: Tasks have a green background when considered complete, red for incomplete, and white for when completion is meaningless in the context of the task
+ * Handles the expanding/collapsing of task descriptions when tasks get selected
  * TODO: may eventually handle sorting alphabetically and by completeness
  * TODO: may eventually allow for navigation to another view that shows stats and data
  */
@@ -27,27 +30,33 @@ class MainActivity : AppCompatActivity() {
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.activity_main)
 
-		//Gets the listView and sets its adapter
-		val listView = this.findViewById<ListView>(R.id.ListView)
-		listView.adapter = TaskAdapter(this)
-
-		//Allows descriptions to expand and collapse when selected
-		listView.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
-			//Finds what was previously expanded and what was just selected
-			val previousExpansion = TaskDataController.get(this).expandedTask
-			val selectedTask = listView.adapter.getItem(position) as Task
-			//If something else was previously expanded, collapse it
-			if (previousExpansion != null) {
-				listView.findViewWithTag<RelativeLayout>(previousExpansion.name).findViewById<TextView>(R.id.TaskDescription).visibility = View.GONE
-				//Since the user selected something that was already expanded and has now been collapsed, mark nothing as expanded and leave
-				if (selectedTask == previousExpansion) {
-					TaskDataController.get(this).expandedTask = null
-					return@OnItemClickListener
-				}
-			}
-			//Expand what the user selected and mark that task as expanded
-			listView.findViewWithTag<RelativeLayout>(selectedTask.name).findViewById<TextView>(R.id.TaskDescription).visibility = View.VISIBLE
-			TaskDataController.get(this).expandedTask = selectedTask
+		val taskContainer = this.findViewById<LinearLayout>(R.id.TaskContainer)
+		TaskDataController.get(this).getPrimaryTasks().forEach { task ->
+			val taskView = LayoutInflater.from(this).inflate(R.layout.task, taskContainer, false)
+			this.populateTaskView(taskView, task)
+			//TODO: put in the sub tasks
+			taskContainer.addView(taskView)
 		}
 	}
+
+	/**
+	 * Populates the given task view with data from the given task
+	 */
+	private fun populateTaskView(taskView: View, task: Task) {
+		taskView.tag = task.name
+		taskView.findViewById<TextView>(R.id.TaskTitle).text = task.displayName
+		taskView.findViewById<TextView>(R.id.TaskDescription).text = task.description
+		//TODO: link up form behaviour to TaskDataController (both for form initial value and for when form is interacted with)
+		if (task.formType == FormType.CHECKBOX) {
+			taskView.findViewById<CheckBox>(R.id.TaskCheckBox).visibility = View.VISIBLE
+		} else if (task.formType == FormType.POSITIVE_INTEGER) {
+			taskView.findViewById<NumberPicker>(R.id.TaskNumberPicker).visibility = View.VISIBLE
+		}
+		taskView.findViewById<TextView>(R.id.TaskFormDescription).text = task.formDescription
+		taskView.setOnClickListener {
+			val descriptionBox = taskView.findViewById<TextView>(R.id.TaskDescription)
+			descriptionBox.visibility = if (descriptionBox.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+		}
+	}
+
 }
