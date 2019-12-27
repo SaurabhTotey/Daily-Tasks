@@ -15,7 +15,7 @@ import com.saurabhtotey.dailytasks.model.Task
  * In its most basic essence, shows a list of tasks
  *
  * Tasks are displayed as titles, descriptions, and a form field for marking some sort of completion info
- * Tasks also display with an indented list of sub-tasks that the parent task may consider when evaluating completion
+ * TODO: Tasks also display with an indented list of sub-tasks that the parent task may consider when evaluating completion
  * TODO: Tasks have a green background when considered complete, red for incomplete, and white for when completion is meaningless in the context of the task
  * Handles the expanding/collapsing of task descriptions when tasks get selected
  * TODO: may eventually handle sorting alphabetically and by completeness
@@ -45,17 +45,19 @@ class MainActivity : AppCompatActivity() {
 	private fun populateTaskView(taskView: View, task: Task) {
 		taskView.tag = task.name
 		taskView.findViewById<TextView>(R.id.TaskTitle).text = task.displayName
-		taskView.findViewById<TextView>(R.id.TaskDescription).text = task.description
+		taskView.findViewById<TextView>(R.id.TaskFormDescription).text = task.formDescription
+
+		val taskDescriptionView = taskView.findViewById<TextView>(R.id.TaskDescription)
+		taskDescriptionView.text = task.description
+		taskView.setOnClickListener {
+			taskDescriptionView.visibility = if (taskDescriptionView.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+		}
+
 		//TODO: link up form behaviour to TaskDataController (both for form initial value and for when form is interacted with)
 		if (task.formType == FormType.CHECKBOX) {
 			taskView.findViewById<CheckBox>(R.id.TaskCheckBox).visibility = View.VISIBLE
 		} else if (task.formType == FormType.POSITIVE_INTEGER) {
 			taskView.findViewById<NumberPicker>(R.id.TaskNumberPicker).visibility = View.VISIBLE
-		}
-		taskView.findViewById<TextView>(R.id.TaskFormDescription).text = task.formDescription
-		taskView.setOnClickListener {
-			val descriptionBox = taskView.findViewById<TextView>(R.id.TaskDescription)
-			descriptionBox.visibility = if (descriptionBox.visibility == View.VISIBLE) View.GONE else View.VISIBLE
 		}
 	}
 
