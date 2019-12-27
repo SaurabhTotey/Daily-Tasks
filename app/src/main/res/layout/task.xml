@@ -48,9 +48,9 @@
 		android:visibility="gone" />
 
 	<LinearLayout
-		android:id="@+id/SubTaskListView"
+		android:id="@+id/SubTaskView"
 		tools:ignore="RtlSymmetry"
-		android:paddingStart="3dp"
+		android:paddingStart="15dp"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:layout_below="@id/TaskDescription"

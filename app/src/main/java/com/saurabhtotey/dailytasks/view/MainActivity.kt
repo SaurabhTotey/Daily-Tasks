@@ -34,7 +34,13 @@ class MainActivity : AppCompatActivity() {
 		TaskDataController.get(this).getPrimaryTasks().forEach { task ->
 			val taskView = LayoutInflater.from(this).inflate(R.layout.task, taskContainer, false)
 			this.populateTaskView(taskView, task)
-			//TODO: put in the sub tasks
+			val subTaskContainer = taskView.findViewById<LinearLayout>(R.id.SubTaskView)
+			task.subTasks.forEach { subTask ->
+				//TODO: it probably would be best to make a separate subTask layout with different spacings so that everything lines up
+				val subTaskView = LayoutInflater.from(this).inflate(R.layout.task, subTaskContainer, false)
+				this.populateTaskView(subTaskView, subTask)
+				subTaskContainer.addView(subTaskView)
+			}
 			taskContainer.addView(taskView)
 		}
 	}
