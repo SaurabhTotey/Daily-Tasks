@@ -48,6 +48,7 @@
 				android:autofillHints="no"
 				android:hint="@string/form_number_input_hint"
 				android:inputType="number"
+				android:imeOptions="actionDone"
 				android:layout_gravity="center"
 				android:visibility="invisible" />
 

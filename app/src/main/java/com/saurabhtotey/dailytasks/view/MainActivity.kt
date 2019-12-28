@@ -5,6 +5,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
+import android.view.inputmethod.EditorInfo
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.saurabhtotey.dailytasks.R
@@ -85,6 +86,17 @@ class MainActivity : AppCompatActivity() {
 				override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
 				override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
 			})
+			numberInput.setOnEditorActionListener { _, actionId, _ ->
+				if (actionId == EditorInfo.IME_ACTION_DONE) {
+					numberInput.clearFocus()
+				}
+				return@setOnEditorActionListener false
+			}
+			numberInput.setOnFocusChangeListener { _, hasFocus ->
+				if (!hasFocus && numberInput.text.isBlank()) {
+					numberInput.setText("0")
+				}
+			}
 		}
 
 		//Populates the subTaskContainer with the task's sub-tasks
