@@ -1,11 +1,15 @@
 package com.saurabhtotey.dailytasks.view
 
+import android.content.Context
+import android.graphics.Rect
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.saurabhtotey.dailytasks.R
@@ -140,6 +144,26 @@ class MainActivity : AppCompatActivity() {
 				this.theme
 			)
 		}
+	}
+
+	/**
+	 * Un-focuses any EditTexts if they were focused but a tap or click occurred outside of their rectangle
+	 * Copied from https://stackoverflow.com/a/28939113
+	 */
+	override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+		if (event.action == MotionEvent.ACTION_DOWN) {
+			val v = currentFocus
+			if (v is EditText) {
+				val outRect = Rect()
+				v.getGlobalVisibleRect(outRect)
+				if (!outRect.contains(event.rawX.toInt(), event.rawY.toInt())) {
+					v.clearFocus()
+					val imm: InputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+					imm.hideSoftInputFromWindow(v.getWindowToken(), 0)
+				}
+			}
+		}
+		return super.dispatchTouchEvent(event)
 	}
 
 }
