@@ -9,8 +9,8 @@
 
 	<ImageButton
 		android:id="@+id/ExpandSubTasksButton"
-		android:layout_width="30dp"
-		android:layout_height="30dp"
+		android:layout_width="40dp"
+		android:layout_height="40dp"
 		android:contentDescription="@string/expand_sub_tasks_button_description"
 		android:src="@android:drawable/arrow_down_float"
 		android:background="@android:color/transparent"
@@ -19,40 +19,44 @@
 	<TextView
 		android:id="@+id/TaskTitle"
 		android:layout_width="245dp"
-		android:layout_height="25dp"
+		android:layout_height="40dp"
 		android:gravity="center_vertical"
 		android:textAppearance="@style/TextAppearance.AppCompat.Title"
 		android:layout_toEndOf="@+id/ExpandSubTasksButton" />
 
 	<RelativeLayout
 		android:layout_width="150dp"
-		android:layout_height="25dp"
+		android:layout_height="40dp"
 		android:layout_toEndOf="@id/TaskTitle">
 
 		<TextView
 			android:id="@+id/TaskFormDescription"
 			android:layout_width="75dp"
-			android:layout_height="wrap_content"
+			android:layout_height="40dp"
+			android:gravity="center_vertical"
 			android:layout_alignParentEnd="true" />
 
 		<FrameLayout
 			android:layout_width="75dp"
-			android:layout_height="75dp"
+			android:layout_height="40dp"
 			android:layout_toStartOf="@+id/TaskFormDescription">
 
-			<NumberPicker
-				android:id="@+id/TaskNumberPicker"
+			<EditText
+				android:id="@+id/TaskNumberInput"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
+				android:autofillHints="no"
+				android:hint="@string/form_number_input_hint"
+				android:inputType="number"
 				android:layout_gravity="center"
-				android:visibility="gone" />
+				android:visibility="invisible" />
 
 			<CheckBox
 				android:id="@+id/TaskCheckBox"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:layout_gravity="center"
-				android:visibility="gone" />
+				android:visibility="invisible" />
 
 		</FrameLayout>
 

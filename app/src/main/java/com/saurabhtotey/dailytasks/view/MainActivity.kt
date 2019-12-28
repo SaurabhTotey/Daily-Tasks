@@ -1,13 +1,12 @@
 package com.saurabhtotey.dailytasks.view
 
 import android.os.Bundle
-import android.text.InputType
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.children
 import com.saurabhtotey.dailytasks.R
 import com.saurabhtotey.dailytasks.TaskDataController
 import com.saurabhtotey.dailytasks.model.FormType
@@ -74,30 +73,18 @@ class MainActivity : AppCompatActivity() {
 				this.updateTaskViews()
 			}
 		} else if (task.formType == FormType.POSITIVE_INTEGER) {
-			val numberPicker = taskView.findViewById<NumberPicker>(R.id.TaskNumberPicker)
-			numberPicker.visibility = View.VISIBLE
-			numberPicker.minValue = 0
-			numberPicker.maxValue = Int.MAX_VALUE
-			numberPicker.value = TaskDataController.get(this).getValueFor(task)
-			fun findEditText(viewGroup: ViewGroup): EditText? {
-				viewGroup.children.forEach { child ->
-					if (child is ViewGroup) {
-						val result = findEditText(child)
-						if (result != null) {
-							return result
-						}
-					} else if (child is EditText) {
-						return child
-					}
+			val numberInput = taskView.findViewById<EditText>(R.id.TaskNumberInput)
+			numberInput.visibility = View.VISIBLE
+			numberInput.setText("${TaskDataController.get(this).getValueFor(task)}")
+			numberInput.addTextChangedListener(object : TextWatcher {
+				override fun afterTextChanged(p0: Editable?) {
+					val numberInputValue = numberInput.text.toString().toIntOrNull() ?: return
+					TaskDataController.get(this@MainActivity).setValueForTask(task, numberInputValue)
+					this@MainActivity.updateTaskViews()
 				}
-				return null
-			}
-			val numberPickerEditText = findEditText(numberPicker)
-			numberPickerEditText?.setRawInputType(InputType.TYPE_CLASS_NUMBER)
-			numberPicker.setOnValueChangedListener { _, _, value ->
-				TaskDataController.get(this).setValueForTask(task, value)
-				this.updateTaskViews()
-			}
+				override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+				override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+			})
 		}
 
 		//Populates the subTaskContainer with the task's sub-tasks
