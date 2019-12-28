@@ -38,13 +38,15 @@ enum class Task(val displayName: String, val description: String, val formType: 
 		"Brush Teeth",
 		"Brush your teeth at least twice today.",
 		FormType.POSITIVE_INTEGER,
-		"times"
+		"times",
+		{ it[0] >= 2 }
 	),
 	PRACTICE(
 		"Practice Piano",
 		"Spend at least 30 minutes practicing the piano. If possible, also practice cello.",
 		FormType.POSITIVE_INTEGER,
-		"minutes"
+		"minutes",
+		{ it[0] >= 30 }
 	),
 	EAT_HEALTHY("Eat Healthy Meals", "Eat healthy meals.", FormType.POSITIVE_INTEGER, "meals"),
 	EAT_MISCELLANEOUS("Eat Meals", "Eat meals.", FormType.POSITIVE_INTEGER, "meals", { null }),
