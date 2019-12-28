@@ -20,9 +20,6 @@ import com.saurabhtotey.dailytasks.model.Task
  * Handles the expanding/collapsing of task descriptions when tasks get selected
  * TODO: may eventually handle sorting alphabetically and by completeness
  * TODO: may eventually allow for navigation to another view that shows stats and data
- *
- * TODO: cannot handle displaying sub-sub-tasks without messing up form appearance because using an
- *  unsustainable separate sub_task view with different spacing: the spacing changes should be programmatic
  */
 class MainActivity : AppCompatActivity() {
 
@@ -36,8 +33,8 @@ class MainActivity : AppCompatActivity() {
 		val taskContainer = this.findViewById<LinearLayout>(R.id.TaskContainer)
 		TaskDataController.get(this).getPrimaryTasks().forEach { task ->
 			val taskView = LayoutInflater.from(this).inflate(R.layout.task, taskContainer, false)
-			this.populateTaskView(taskView, task)
 			taskContainer.addView(taskView)
+			this.populateTaskView(taskView, task)
 		}
 	}
 
@@ -63,11 +60,16 @@ class MainActivity : AppCompatActivity() {
 			taskView.findViewById<NumberPicker>(R.id.TaskNumberPicker).visibility = View.VISIBLE
 		}
 
+		if (isSubTask) {
+//			taskTitleView.layoutParams.width -= (15 * this.resources.displayMetrics.density + 0.5f).toInt()
+			taskTitleView.layoutParams.width -= (taskView.parent as LinearLayout).paddingStart
+		}
+
 		val subTaskContainer = taskView.findViewById<LinearLayout>(R.id.SubTaskContainer)
 		task.subTasks.forEach { subTask ->
-			val subTaskView = LayoutInflater.from(this).inflate(R.layout.sub_task, subTaskContainer, false)
-			this.populateTaskView(subTaskView, subTask, true)
+			val subTaskView = LayoutInflater.from(this).inflate(R.layout.task, subTaskContainer, false)
 			subTaskContainer.addView(subTaskView)
+			this.populateTaskView(subTaskView, subTask, true)
 		}
 
 		if (task.subTasks.isNotEmpty()) {
