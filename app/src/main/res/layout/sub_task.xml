@@ -6,6 +6,11 @@
 	android:layout_height="wrap_content"
 	android:padding="5dp">
 
+	<!--TODO: the only difference between this and task.xml is that TaskTitle's width is 15dp less
+	(15dp comes from the padding for displaying sub-tasks) so that the forms can line up: this is
+	unsustainable and doesn't work for sub-sub-tasks or deeper nestings.
+	Programmatic spacings should be used so that for each layer of sub-task, the title width is 15dp less-->
+
 	<ImageButton
 		android:id="@+id/ExpandSubTasksButton"
 		android:layout_width="30dp"
@@ -17,7 +22,7 @@
 
 	<TextView
 		android:id="@+id/TaskTitle"
-		android:layout_width="245dp"
+		android:layout_width="230dp"
 		android:layout_height="25dp"
 		android:gravity="center_vertical"
 		android:textAppearance="@style/TextAppearance.AppCompat.Title"

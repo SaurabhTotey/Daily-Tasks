@@ -15,11 +15,14 @@ import com.saurabhtotey.dailytasks.model.Task
  * In its most basic essence, shows a list of tasks
  *
  * Tasks are displayed as titles, descriptions, and a form field for marking some sort of completion info
- * TODO: Tasks also display with an indented list of sub-tasks that the parent task may consider when evaluating completion
+ * Tasks also display with a button that expands and closes an indented list of sub-tasks that the parent task may consider when evaluating completion
  * TODO: Tasks have a green background when considered complete, red for incomplete, and white for when completion is meaningless in the context of the task
  * Handles the expanding/collapsing of task descriptions when tasks get selected
  * TODO: may eventually handle sorting alphabetically and by completeness
  * TODO: may eventually allow for navigation to another view that shows stats and data
+ *
+ * TODO: cannot handle displaying sub-sub-tasks without messing up form appearance because using an
+ *  unsustainable separate sub_task view with different spacing: the spacing changes should be programmatic
  */
 class MainActivity : AppCompatActivity() {
 
@@ -34,13 +37,6 @@ class MainActivity : AppCompatActivity() {
 		TaskDataController.get(this).getPrimaryTasks().forEach { task ->
 			val taskView = LayoutInflater.from(this).inflate(R.layout.task, taskContainer, false)
 			this.populateTaskView(taskView, task)
-			val subTaskContainer = taskView.findViewById<LinearLayout>(R.id.SubTaskContainer)
-			task.subTasks.forEach { subTask ->
-				//TODO: it probably would be best to make a separate subTask layout with different spacings so that everything lines up
-				val subTaskView = LayoutInflater.from(this).inflate(R.layout.task, subTaskContainer, false)
-				this.populateTaskView(subTaskView, subTask)
-				subTaskContainer.addView(subTaskView)
-			}
 			taskContainer.addView(taskView)
 		}
 	}
@@ -48,9 +44,10 @@ class MainActivity : AppCompatActivity() {
 	/**
 	 * Populates the given task view with data from the given task
 	 */
-	private fun populateTaskView(taskView: View, task: Task) {
+	private fun populateTaskView(taskView: View, task: Task, isSubTask: Boolean = false) {
 		taskView.tag = task.name
-		taskView.findViewById<TextView>(R.id.TaskTitle).text = task.displayName
+		val taskTitleView = taskView.findViewById<TextView>(R.id.TaskTitle)
+		taskTitleView.text = task.displayName
 		taskView.findViewById<TextView>(R.id.TaskFormDescription).text = task.formDescription
 
 		val taskDescriptionView = taskView.findViewById<TextView>(R.id.TaskDescription)
@@ -59,9 +56,22 @@ class MainActivity : AppCompatActivity() {
 			taskDescriptionView.visibility = if (taskDescriptionView.visibility == View.VISIBLE) View.GONE else View.VISIBLE
 		}
 
+		//TODO: link up form behaviour to TaskDataController (both for form initial value and for when form is interacted with)
+		if (task.formType == FormType.CHECKBOX) {
+			taskView.findViewById<CheckBox>(R.id.TaskCheckBox).visibility = View.VISIBLE
+		} else if (task.formType == FormType.POSITIVE_INTEGER) {
+			taskView.findViewById<NumberPicker>(R.id.TaskNumberPicker).visibility = View.VISIBLE
+		}
+
+		val subTaskContainer = taskView.findViewById<LinearLayout>(R.id.SubTaskContainer)
+		task.subTasks.forEach { subTask ->
+			val subTaskView = LayoutInflater.from(this).inflate(R.layout.sub_task, subTaskContainer, false)
+			this.populateTaskView(subTaskView, subTask, true)
+			subTaskContainer.addView(subTaskView)
+		}
+
 		if (task.subTasks.isNotEmpty()) {
 			val subTaskExpansionButton = taskView.findViewById<ImageButton>(R.id.ExpandSubTasksButton)
-			val subTaskContainer = taskView.findViewById<LinearLayout>(R.id.SubTaskContainer)
 			subTaskExpansionButton.visibility = View.VISIBLE
 			var isExpanded = false
 			subTaskExpansionButton.setOnClickListener() {
@@ -74,13 +84,6 @@ class MainActivity : AppCompatActivity() {
 				}
 				isExpanded = !isExpanded
 			}
-		}
-
-		//TODO: link up form behaviour to TaskDataController (both for form initial value and for when form is interacted with)
-		if (task.formType == FormType.CHECKBOX) {
-			taskView.findViewById<CheckBox>(R.id.TaskCheckBox).visibility = View.VISIBLE
-		} else if (task.formType == FormType.POSITIVE_INTEGER) {
-			taskView.findViewById<NumberPicker>(R.id.TaskNumberPicker).visibility = View.VISIBLE
 		}
 	}
 
