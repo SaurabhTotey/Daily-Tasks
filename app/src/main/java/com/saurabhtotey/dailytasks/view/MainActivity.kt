@@ -101,6 +101,7 @@ class MainActivity : AppCompatActivity() {
 					numberInput.setText("0")
 				}
 			}
+			//TODO: unfocus when keyboard is dismissed: this is difficult and is probably going to need https://stackoverflow.com/questions/3425932/detecting-when-user-has-dismissed-the-soft-keyboard
 		}
 
 		//Populates the subTaskContainer with the task's sub-tasks
@@ -152,14 +153,13 @@ class MainActivity : AppCompatActivity() {
 	 */
 	override fun dispatchTouchEvent(event: MotionEvent): Boolean {
 		if (event.action == MotionEvent.ACTION_DOWN) {
-			val v = currentFocus
-			if (v is EditText) {
+			val currentFocus = this.currentFocus
+			if (currentFocus is EditText) {
 				val outRect = Rect()
-				v.getGlobalVisibleRect(outRect)
+				currentFocus.getGlobalVisibleRect(outRect)
 				if (!outRect.contains(event.rawX.toInt(), event.rawY.toInt())) {
-					v.clearFocus()
-					val imm: InputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-					imm.hideSoftInputFromWindow(v.getWindowToken(), 0)
+					currentFocus.clearFocus()
+					(getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).hideSoftInputFromWindow(currentFocus.getWindowToken(), 0)
 				}
 			}
 		}
