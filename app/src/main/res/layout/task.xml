@@ -12,6 +12,7 @@
 		android:layout_height="30dp"
 		android:contentDescription="@string/expand_sub_tasks_button_description"
 		android:src="@android:drawable/arrow_down_float"
+		android:background="@android:color/transparent"
 		android:visibility="invisible" />
 
 	<TextView
@@ -54,6 +55,7 @@
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:layout_below="@id/TaskTitle"
+		android:layout_toEndOf="@id/ExpandSubTasksButton"
 		android:visibility="gone" />
 
 	<LinearLayout

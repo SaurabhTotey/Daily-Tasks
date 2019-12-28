@@ -20,6 +20,7 @@ package com.saurabhtotey.dailytasks.model
  *
  * TODO: consider storing task data as doubles instead of ints
  * TODO: consider passing in a date along with the array of integers to evaluateIsComplete so that the evaluation can account for the date
+ * TODO: ideally these tasks would be encoded in some external format like a JSON file so they are more configurable, but that is difficult because tasks also need to specify their completion evaluation logic
  */
 enum class Task(val displayName: String, val description: String, val formType: FormType = FormType.CHECKBOX, val formDescription: String = "", val evaluateIsCompleted: (Array<Int>) -> Boolean? = { it[0] > 0 }, val subTasks: Array<Task> = arrayOf()) {
 	MEDITATE(
@@ -83,6 +84,10 @@ enum class Task(val displayName: String, val description: String, val formType: 
 		"",
 		{ it[1] > 0 || it[2] > 0 },
 		arrayOf(TALK_NEW, TALK_QUESTION)
+	),
+	JOURNAL(
+		"Write in Journal",
+		"Write about your day in your journal. Think a little bit about what has happened today and what you have done or not done."
 	),
 	PLANK(
 		"Plank",
