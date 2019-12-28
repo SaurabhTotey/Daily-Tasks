@@ -42,29 +42,33 @@ class MainActivity : AppCompatActivity() {
 	 * Populates the given task view with data from the given task
 	 */
 	private fun populateTaskView(taskView: View, task: Task, isSubTask: Boolean = false) {
+		//Gives the task view its basic information
 		taskView.tag = task.name
 		val taskTitleView = taskView.findViewById<TextView>(R.id.TaskTitle)
+		val taskDescriptionView = taskView.findViewById<TextView>(R.id.TaskDescription)
 		taskTitleView.text = task.displayName
+		taskDescriptionView.text = task.description
 		taskView.findViewById<TextView>(R.id.TaskFormDescription).text = task.formDescription
 
-		val taskDescriptionView = taskView.findViewById<TextView>(R.id.TaskDescription)
-		taskDescriptionView.text = task.description
+		//Shortens sub task title width so that form controls line up TODO: change isSubTask to subTask depth and put below with multiplication to make this work for nested sub-tasks
+		if (isSubTask) {
+			taskTitleView.layoutParams.width -= (taskView.parent as LinearLayout).paddingStart
+		}
+
+		//Implements that when tasks are clicked, they toggle the visibility of their descriptions
 		taskView.setOnClickListener {
 			taskDescriptionView.visibility = if (taskDescriptionView.visibility == View.VISIBLE) View.GONE else View.VISIBLE
 		}
 
 		//TODO: link up form behaviour to TaskDataController (both for form initial value and for when form is interacted with)
+		//Creates task form controls and TODO: links it up with the TaskDataController to keep data up to date
 		if (task.formType == FormType.CHECKBOX) {
 			taskView.findViewById<CheckBox>(R.id.TaskCheckBox).visibility = View.VISIBLE
 		} else if (task.formType == FormType.POSITIVE_INTEGER) {
 			taskView.findViewById<NumberPicker>(R.id.TaskNumberPicker).visibility = View.VISIBLE
 		}
 
-		if (isSubTask) {
-//			taskTitleView.layoutParams.width -= (15 * this.resources.displayMetrics.density + 0.5f).toInt()
-			taskTitleView.layoutParams.width -= (taskView.parent as LinearLayout).paddingStart
-		}
-
+		//Populates the subTaskContainer with the task's sub-tasks
 		val subTaskContainer = taskView.findViewById<LinearLayout>(R.id.SubTaskContainer)
 		task.subTasks.forEach { subTask ->
 			val subTaskView = LayoutInflater.from(this).inflate(R.layout.task, subTaskContainer, false)
@@ -72,6 +76,7 @@ class MainActivity : AppCompatActivity() {
 			this.populateTaskView(subTaskView, subTask, true)
 		}
 
+		//Adds a button to expand and collapse the subTaskContainer if the task has sub-tasks
 		if (task.subTasks.isNotEmpty()) {
 			val subTaskExpansionButton = taskView.findViewById<ImageButton>(R.id.ExpandSubTasksButton)
 			subTaskExpansionButton.visibility = View.VISIBLE
