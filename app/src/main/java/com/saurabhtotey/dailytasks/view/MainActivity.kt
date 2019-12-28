@@ -16,7 +16,7 @@ import com.saurabhtotey.dailytasks.model.Task
  *
  * Tasks are displayed as titles, descriptions, and a form field for marking some sort of completion info
  * Tasks also display with a button that expands and closes an indented list of sub-tasks that the parent task may consider when evaluating completion
- * TODO: Tasks have a green background when considered complete, red for incomplete, and white for when completion is meaningless in the context of the task
+ * Tasks have a green background when considered complete, red for incomplete, and white for when completion is meaningless in the context of the task
  * Handles the expanding/collapsing of task descriptions when tasks get selected
  * TODO: may eventually handle sorting alphabetically and by completeness
  * TODO: may eventually allow for navigation to another view that shows stats and data
@@ -92,6 +92,23 @@ class MainActivity : AppCompatActivity() {
 				isExpanded = !isExpanded
 			}
 		}
+
+		this.updateTaskView(taskView, task)
+	}
+
+	/**
+	 * Updates the appearance of the given taskView based off of data for the given task
+	 */
+	private fun updateTaskView(taskView: View, task: Task) {
+		val completion = task.evaluateIsCompleted(TaskDataController.get(this).getValuesForTask(task))
+		taskView.background = this.resources.getDrawable(
+			when (completion) {
+				null -> R.color.taskCompletionIrrelevant
+				true -> R.color.taskComplete
+				false -> R.color.taskIncomplete
+			},
+			this.theme
+		)
 	}
 
 }

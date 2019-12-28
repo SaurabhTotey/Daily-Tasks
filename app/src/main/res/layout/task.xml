@@ -4,7 +4,8 @@
 	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
-	android:padding="5dp">
+	android:padding="5dp"
+	android:background="@color/taskCompletionIrrelevant">
 
 	<ImageButton
 		android:id="@+id/ExpandSubTasksButton"
@@ -21,7 +22,7 @@
 		android:layout_height="25dp"
 		android:gravity="center_vertical"
 		android:textAppearance="@style/TextAppearance.AppCompat.Title"
-		android:layout_toEndOf="@+id/ExpandSubTasksButton"/>
+		android:layout_toEndOf="@+id/ExpandSubTasksButton" />
 
 	<RelativeLayout
 		android:layout_width="150dp"
