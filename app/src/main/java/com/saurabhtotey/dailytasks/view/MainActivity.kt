@@ -36,6 +36,7 @@ class MainActivity : AppCompatActivity() {
 			taskContainer.addView(taskView)
 			this.populateTaskView(taskView, task)
 		}
+		this.updateTaskViews()
 	}
 
 	/**
@@ -60,12 +61,18 @@ class MainActivity : AppCompatActivity() {
 			taskDescriptionView.visibility = if (taskDescriptionView.visibility == View.VISIBLE) View.GONE else View.VISIBLE
 		}
 
-		//TODO: link up form behaviour to TaskDataController (both for form initial value and for when form is interacted with)
-		//Creates task form controls and TODO: links it up with the TaskDataController to keep data up to date
+		//Creates task form controls and links it up with the TaskDataController to keep data up to date
 		if (task.formType == FormType.CHECKBOX) {
-			taskView.findViewById<CheckBox>(R.id.TaskCheckBox).visibility = View.VISIBLE
+			val checkBox = taskView.findViewById<CheckBox>(R.id.TaskCheckBox)
+			checkBox.visibility = View.VISIBLE
+			checkBox.isChecked = TaskDataController.get(this).getValueFor(task) > 0
+			checkBox.setOnCheckedChangeListener { _, isChecked ->
+				TaskDataController.get(this).setValueForTask(task, if (isChecked) 1 else 0)
+				this.updateTaskViews()
+			}
 		} else if (task.formType == FormType.POSITIVE_INTEGER) {
 			taskView.findViewById<NumberPicker>(R.id.TaskNumberPicker).visibility = View.VISIBLE
+			//TODO: implement
 		}
 
 		//Populates the subTaskContainer with the task's sub-tasks
@@ -92,23 +99,23 @@ class MainActivity : AppCompatActivity() {
 				isExpanded = !isExpanded
 			}
 		}
-
-		this.updateTaskView(taskView, task)
 	}
 
 	/**
-	 * Updates the appearance of the given taskView based off of data for the given task
+	 * Updates the appearance for all taskViews based off of their completion
 	 */
-	private fun updateTaskView(taskView: View, task: Task) {
-		val completion = task.evaluateIsCompleted(TaskDataController.get(this).getValuesForTask(task))
-		taskView.background = this.resources.getDrawable(
-			when (completion) {
-				null -> R.color.taskCompletionIrrelevant
-				true -> R.color.taskComplete
-				false -> R.color.taskIncomplete
-			},
-			this.theme
-		)
+	private fun updateTaskViews() {
+		Task.values().forEach { task ->
+			val completion = task.evaluateIsCompleted(TaskDataController.get(this).getValuesForTask(task))
+			this.findViewById<LinearLayout>(R.id.TaskContainer).findViewWithTag<RelativeLayout>(task.name).background = this.resources.getDrawable(
+				when (completion) {
+					null -> R.color.taskCompletionIrrelevant
+					true -> R.color.taskComplete
+					false -> R.color.taskIncomplete
+				},
+				this.theme
+			)
+		}
 	}
 
 }

@@ -108,6 +108,7 @@ class TaskDataController private constructor(context: Context) {
 		} else {
 			(this.currentDayTasksData["data"] as JSONObject).put(task.name, value)
 		}
+		this.handleUpdate()
 	}
 
 	/**
