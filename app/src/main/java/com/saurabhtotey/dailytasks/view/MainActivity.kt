@@ -40,8 +40,10 @@ class MainActivity : AppCompatActivity() {
 
 	/**
 	 * Populates the given task view with data from the given task
+	 * Task depth is how nested the task is as a sub-task:
+	 *  0 means the task is a main task, 1 means the task is a sub-task, 2 means the task is a sub-sub-task, and so on
 	 */
-	private fun populateTaskView(taskView: View, task: Task, isSubTask: Boolean = false) {
+	private fun populateTaskView(taskView: View, task: Task, taskDepth: Int = 0) {
 		//Gives the task view its basic information
 		taskView.tag = task.name
 		val taskTitleView = taskView.findViewById<TextView>(R.id.TaskTitle)
@@ -50,10 +52,8 @@ class MainActivity : AppCompatActivity() {
 		taskDescriptionView.text = task.description
 		taskView.findViewById<TextView>(R.id.TaskFormDescription).text = task.formDescription
 
-		//Shortens sub task title width so that form controls line up TODO: change isSubTask to subTask depth and put below with multiplication to make this work for nested sub-tasks
-		if (isSubTask) {
-			taskTitleView.layoutParams.width -= (taskView.parent as LinearLayout).paddingStart
-		}
+		//Shortens sub task title width so that form controls line up
+		taskTitleView.layoutParams.width -= taskDepth * (taskView.parent as LinearLayout).paddingStart
 
 		//Implements that when tasks are clicked, they toggle the visibility of their descriptions
 		taskView.setOnClickListener {
@@ -73,7 +73,7 @@ class MainActivity : AppCompatActivity() {
 		task.subTasks.forEach { subTask ->
 			val subTaskView = LayoutInflater.from(this).inflate(R.layout.task, subTaskContainer, false)
 			subTaskContainer.addView(subTaskView)
-			this.populateTaskView(subTaskView, subTask, true)
+			this.populateTaskView(subTaskView, subTask, taskDepth + 1)
 		}
 
 		//Adds a button to expand and collapse the subTaskContainer if the task has sub-tasks
