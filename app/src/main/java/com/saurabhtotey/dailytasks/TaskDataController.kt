@@ -12,6 +12,7 @@ import java.util.*
  * A singleton that acts as a controller if taken in an MVC context
  * Manages data flow and recording data to file and reading data from file
  * The context that is passed in is only used to initialize file IO: any correct context object should work
+ * TODO: delete entries where there is a date but no data to save space
  */
 class TaskDataController private constructor(context: Context) {
 
@@ -48,9 +49,9 @@ class TaskDataController private constructor(context: Context) {
 	 * Gets task data for today from fileData
 	 * If no data on file for today, create an entry
 	 * Guarantees that today's entry is the first entry of fileData
-	 * TODO: must be called again if the app is open but the date changes
+	 * Must be called again if the app is open but the date changes
 	 */
-	private fun initializeNewDayData() {
+	fun initializeNewDayData() {
 		val currentDate = this.getDateString()
 		if (this.fileData.length() == 0 || (this.fileData[0] as JSONObject).getString("date") != currentDate) {
 			this.currentDayTasksData = JSONObject()

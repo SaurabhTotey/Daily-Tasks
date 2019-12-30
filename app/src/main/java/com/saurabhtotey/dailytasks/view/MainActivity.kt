@@ -1,6 +1,10 @@
 package com.saurabhtotey.dailytasks.view
 
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
 import android.text.Editable
@@ -16,6 +20,7 @@ import com.saurabhtotey.dailytasks.R
 import com.saurabhtotey.dailytasks.TaskDataController
 import com.saurabhtotey.dailytasks.model.FormType
 import com.saurabhtotey.dailytasks.model.Task
+import java.util.*
 
 /**
  * The main view for this application
@@ -30,6 +35,8 @@ import com.saurabhtotey.dailytasks.model.Task
  */
 class MainActivity : AppCompatActivity() {
 
+	private val alarmManager get() = this.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
 	/**
 	 * Main entry point for the app
 	 */
@@ -37,6 +44,21 @@ class MainActivity : AppCompatActivity() {
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.activity_main)
 
+		//Sets up a daily action that first triggers in midnight in the future and then triggers daily where TaskDataController gets data for the day
+		class TaskDataControllerUpdater: BroadcastReceiver() {
+			override fun onReceive(context: Context, intent: Intent) {
+				TaskDataController.get(context).initializeNewDayData()
+				this@MainActivity.recreate()
+			}
+		}
+		val alarmStartTime = Calendar.getInstance().also {
+			it.set(Calendar.HOUR, 0)
+			it.set(Calendar.MINUTE, 0)
+			it.add(Calendar.DATE, 1)
+		}
+		this.alarmManager.setRepeating(AlarmManager.RTC, alarmStartTime.timeInMillis, AlarmManager.INTERVAL_DAY, PendingIntent.getBroadcast(this, 0, Intent(this, TaskDataControllerUpdater::class.java), 0))
+
+		//Populates the view with tasks
 		val taskContainer = this.findViewById<LinearLayout>(R.id.TaskContainer)
 		TaskDataController.get(this).getPrimaryTasks().forEach { task ->
 			val taskView = LayoutInflater.from(this).inflate(R.layout.task, taskContainer, false)
