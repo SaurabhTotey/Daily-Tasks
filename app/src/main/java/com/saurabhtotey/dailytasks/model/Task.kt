@@ -60,13 +60,13 @@ enum class Task(val displayName: String, val description: String, val formType: 
 	),
 	EXERCISE(
 		"Exercise",
-		"Exercise for at least 20 minutes.",
+		"Exercise for at least 30 minutes.",
 		FormType.POSITIVE_INTEGER,
 		"minutes",
-		{ it[0] >= 20 }
+		{ it[0] >= 30 }
 	),
 	COMMIT(
-		"Make a Code Commit",
+		"Commit Code",
 		"Commit a change on a git repository."
 	),
 	LEARN_PHYSICS(
@@ -77,11 +77,11 @@ enum class Task(val displayName: String, val description: String, val formType: 
 		"Solve a Problem",
 		"Solve any sort of problem. It could be homework, a personal problem, or anything else."
 	),
-	TALK_NEW("Meet a New Person", "Meet and talk with someone you don't know.", FormType.CHECKBOX, "", { if (it[0] > 0) true else null }),
+	TALK_NEW("Meet Someone", "Meet and talk with someone you don't know.", FormType.CHECKBOX, "", { if (it[0] > 0) true else null }),
 	TALK_QUESTION("Ask a Question", "Ask anyone any sort of question. It could be clarification, or asking for help, or anything else.", FormType.CHECKBOX, "", { if (it[0] > 0) true else null }),
 	TALK(
 		"Talk",
-		"Either meet a new person or ask someone familiar a legitimate question.",
+		"Either meet a new person or ask someone a legitimate question.",
 		FormType.NONE,
 		"",
 		{ it[1] > 0 || it[2] > 0 },
@@ -93,7 +93,7 @@ enum class Task(val displayName: String, val description: String, val formType: 
 	),
 	PLANK(
 		"Plank",
-		"Plank for at least 4 minutes (240 seconds).",
+		"Plank with any plank form for at least 4 minutes (240 seconds).",
 		FormType.POSITIVE_INTEGER,
 		"seconds",
 		{ it[0] >= 240 }
