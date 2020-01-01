@@ -1,5 +1,12 @@
 <resources>
-    <string name="app_name">Daily Tasks</string>
-    <string name="expand_sub_tasks_button_description">Expands sub-tasks for the current task.</string>
-    <string name="form_number_input_hint">0</string>
+	<string name="app_name">Daily Tasks</string>
+	<string name="expand_sub_tasks_button_description">Expands sub-tasks for the current task.</string>
+	<string name="form_number_input_hint">0</string>
+	<string name="notification_channel_name">Task Completion Notifications</string>
+	<string name="notification_channel_description">Shows how many tasks are not yet complete today.</string>
+	<string name="notification_title">You have uncompleted tasks!</string>
+	<plurals name="notification_text">
+		<item quantity="one">You have to complete %1$d more task today.</item>
+		<item quantity="other">You have to complete %1$d more tasks today.</item>
+	</plurals>
 </resources>

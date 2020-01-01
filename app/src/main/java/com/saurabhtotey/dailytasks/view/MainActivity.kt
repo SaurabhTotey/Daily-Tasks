@@ -1,7 +1,6 @@
 package com.saurabhtotey.dailytasks.view
 
-import android.app.AlarmManager
-import android.app.PendingIntent
+import android.app.*
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -16,6 +15,7 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationCompat
 import com.saurabhtotey.dailytasks.R
 import com.saurabhtotey.dailytasks.TaskDataController
 import com.saurabhtotey.dailytasks.model.FormType
@@ -36,6 +36,7 @@ import java.util.*
 class MainActivity : AppCompatActivity() {
 
 	private val alarmManager get() = this.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+	private val notificationChannelId = "DailyTasksNotificationChannel"
 
 	/**
 	 * Main entry point for the app
@@ -44,19 +45,8 @@ class MainActivity : AppCompatActivity() {
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.activity_main)
 
-		//Sets up a daily action that first triggers in midnight in the future and then triggers daily where TaskDataController gets data for the day
-		class TaskDataControllerUpdater: BroadcastReceiver() {
-			override fun onReceive(context: Context, intent: Intent) {
-				TaskDataController.get(context).initializeNewDayData()
-				this@MainActivity.recreate()
-			}
-		}
-		val alarmStartTime = Calendar.getInstance().also {
-			it.set(Calendar.HOUR, 0)
-			it.set(Calendar.MINUTE, 0)
-			it.add(Calendar.DATE, 1)
-		}
-		this.alarmManager.setRepeating(AlarmManager.RTC, alarmStartTime.timeInMillis, AlarmManager.INTERVAL_DAY, PendingIntent.getBroadcast(this, 0, Intent(this, TaskDataControllerUpdater::class.java), 0))
+		this.initializeTaskDataControllerUpdateOnNewDay()
+		this.initializeHourlyNotificationSending()
 
 		//Populates the view with tasks
 		val taskContainer = this.findViewById<LinearLayout>(R.id.TaskContainer)
@@ -66,6 +56,95 @@ class MainActivity : AppCompatActivity() {
 			this.populateTaskView(taskView, task)
 		}
 		this.updateTaskViews()
+	}
+
+	/**
+	 * Sets up a daily action that first triggers in midnight in the future and then triggers daily where TaskDataController gets data for the day
+	 */
+	private fun initializeTaskDataControllerUpdateOnNewDay() {
+		class TaskDataControllerUpdater: BroadcastReceiver() {
+			override fun onReceive(context: Context, intent: Intent) {
+				TaskDataController.get(context).initializeNewDayData()
+				this@MainActivity.recreate()
+			}
+		}
+		val alarmStartTime = Calendar.getInstance().also {
+			it.set(Calendar.HOUR, 0)
+			it.set(Calendar.MINUTE, 0)
+			it.set(Calendar.SECOND, 0)
+			it.set(Calendar.MILLISECOND, 0)
+			it.add(Calendar.DATE, 1)
+		}
+		this.alarmManager.setRepeating(
+			AlarmManager.RTC,
+			alarmStartTime.timeInMillis,
+			AlarmManager.INTERVAL_DAY,
+			PendingIntent.getBroadcast(
+				this,
+				0,
+				Intent(this, TaskDataControllerUpdater::class.java),
+				0
+			)
+		)
+	}
+
+	/**
+	 * Sets up notifications that send hourly
+	 * TODO: look at https://stackoverflow.com/questions/36902667/how-to-schedule-notification-in-android
+	 */
+	private fun initializeHourlyNotificationSending() {
+		val notificationManager = this.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+		val notificationChannel = NotificationChannel(this.notificationChannelId, this.getString(R.string.notification_channel_name), NotificationManager.IMPORTANCE_DEFAULT).also {
+			it.description = this.getString(R.string.notification_channel_description)
+			it.lockscreenVisibility = NotificationCompat.VISIBILITY_PUBLIC
+		}
+		notificationManager.createNotificationChannel(notificationChannel)
+		val appOpeningIntent = PendingIntent.getActivity(
+			this,
+			0,
+			Intent(this, MainActivity::class.java).also {
+				it.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+			},
+			0
+		)
+		val notification = NotificationCompat.Builder(this, this.notificationChannelId)
+			.setSmallIcon(R.mipmap.ic_launcher)
+			.setContentTitle(this.getString(R.string.notification_title))
+			.setPriority(NotificationCompat.PRIORITY_DEFAULT)
+			.setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+			.setCategory(NotificationCompat.CATEGORY_REMINDER)
+			.setOnlyAlertOnce(true)
+			.setContentIntent(appOpeningIntent)
+			.setAutoCancel(true)
+		class NotificationSender: BroadcastReceiver() {
+			override fun onReceive(context: Context?, intent: Intent?) {
+				val numberOfIncompleteTasks = TaskDataController.get(this@MainActivity).getPrimaryTasks().count { task ->
+					task.evaluateIsCompleted(TaskDataController.get(this@MainActivity).getValuesForTask(task)) == false
+				}
+				if (numberOfIncompleteTasks == 0) {
+					return
+				}
+				notification.setContentText(this@MainActivity.resources.getQuantityString(R.plurals.notification_text, numberOfIncompleteTasks, numberOfIncompleteTasks))
+				notificationManager.notify(0, notification.build())
+			}
+		}
+		val alarmStartTime = Calendar.getInstance().also {
+			it.set(Calendar.MINUTE, 0)
+			it.set(Calendar.SECOND, 0)
+			it.set(Calendar.MILLISECOND, 0)
+			it.add(Calendar.HOUR, 1)
+		}
+		this.alarmManager.setRepeating(
+			AlarmManager.RTC_WAKEUP,
+			alarmStartTime.timeInMillis,
+			AlarmManager.INTERVAL_HOUR,
+			PendingIntent.getBroadcast(
+				this,
+				0,
+				Intent(this, NotificationSender::class.java),
+				0
+			)
+		)
 	}
 
 	/**
