@@ -6,6 +6,11 @@
 	android:layout_height="match_parent"
 	tools:context=".view.MainActivity">
 
+	<!--
+		TODO: add buttons to filter tasks and sort them based on completeness/alphabetically
+		TODO: add buttons to expand/collapse all task descriptions and expand/collapse all sub-tasks
+	-->
+
 	<ScrollView
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"

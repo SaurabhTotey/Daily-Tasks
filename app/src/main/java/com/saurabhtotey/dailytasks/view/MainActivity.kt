@@ -30,7 +30,6 @@ import java.util.*
  * Tasks also display with a button that expands and closes an indented list of sub-tasks that the parent task may consider when evaluating completion
  * Tasks have a green background when considered complete, red for incomplete, and white for when completion is meaningless in the context of the task
  * Handles the expanding/collapsing of task descriptions when tasks get selected
- * TODO: may eventually handle sorting alphabetically and by completeness
  * TODO: may eventually allow for navigation to another view that shows stats and data
  */
 class MainActivity : AppCompatActivity() {
@@ -60,6 +59,7 @@ class MainActivity : AppCompatActivity() {
 
 	/**
 	 * Sets up a daily action that first triggers in midnight in the future and then triggers daily where TaskDataController gets data for the day
+	 * TODO: this doesn't work: create an application class that handles this one-time initialization
 	 */
 	private fun initializeTaskDataControllerUpdateOnNewDay() {
 		class TaskDataControllerUpdater: BroadcastReceiver() {
@@ -90,6 +90,7 @@ class MainActivity : AppCompatActivity() {
 
 	/**
 	 * Sets up notifications that send hourly
+	 * TODO: this doesn't work: create an application class that handles this one-time initialization
 	 * TODO: look at https://stackoverflow.com/questions/36902667/how-to-schedule-notification-in-android
 	 */
 	private fun initializeHourlyNotificationSending() {

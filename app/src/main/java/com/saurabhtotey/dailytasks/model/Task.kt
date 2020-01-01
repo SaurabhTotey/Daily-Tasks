@@ -18,8 +18,8 @@ package com.saurabhtotey.dailytasks.model
  * A positive integer will record values as its integer
  * An empty form type (NONE) will record as always 0s
  *
- * TODO: consider storing task data as doubles instead of ints
  * TODO: consider passing in a date along with the array of integers to evaluateIsComplete so that the evaluation can account for the date
+ * TODO: instead of using array of integers, create a sort of linked-tree structure to store and pass values to allow for arbitrary nestings
  * TODO: ideally these tasks would be encoded in some external format like a JSON file so they are more configurable, but that is difficult because tasks also need to specify their completion evaluation logic
  */
 enum class Task(val displayName: String, val description: String, val formType: FormType = FormType.CHECKBOX, val formDescription: String = "", val evaluateIsCompleted: (Array<Int>) -> Boolean? = { it[0] > 0 }, val subTasks: Array<Task> = arrayOf()) {
