@@ -72,7 +72,7 @@ class MainActivity : AppCompatActivity() {
 		if (task.formType == FormType.CHECKBOX) {
 			val checkBox = taskView.findViewById<CheckBox>(R.id.TaskCheckBox)
 			checkBox.visibility = View.VISIBLE
-			checkBox.isChecked = TaskDataController.get(this).getValueFor(task) > 0
+			checkBox.isChecked = TaskDataController.get(this).getValueFor(task).value > 0
 			checkBox.setOnCheckedChangeListener { _, isChecked ->
 				TaskDataController.get(this).setValueForTask(task, if (isChecked) 1 else 0)
 				this.updateTaskViews()
@@ -80,7 +80,7 @@ class MainActivity : AppCompatActivity() {
 		} else if (task.formType == FormType.POSITIVE_INTEGER) {
 			val numberInput = taskView.findViewById<EditText>(R.id.TaskNumberInput)
 			numberInput.visibility = View.VISIBLE
-			numberInput.setText("${TaskDataController.get(this).getValueFor(task)}")
+			numberInput.setText("${TaskDataController.get(this).getValueFor(task).value}")
 			numberInput.addTextChangedListener(object : TextWatcher {
 				override fun afterTextChanged(p0: Editable?) {
 					val numberInputValue = numberInput.text.toString().toIntOrNull() ?: return
@@ -135,7 +135,7 @@ class MainActivity : AppCompatActivity() {
 	 */
 	private fun updateTaskViews() {
 		Task.values().forEach { task ->
-			val completion = task.evaluateIsCompleted(TaskDataController.get(this).getValuesForTask(task))
+			val completion = task.evaluateIsCompleted(TaskDataController.get(this).getValueFor(task))
 			this.findViewById<LinearLayout>(R.id.TaskContainer).findViewWithTag<RelativeLayout>(task.name).background = this.resources.getDrawable(
 				when (completion) {
 					null -> R.color.taskCompletionIrrelevant

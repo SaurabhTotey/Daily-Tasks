@@ -2,6 +2,7 @@ package com.saurabhtotey.dailytasks
 
 import android.content.Context
 import com.saurabhtotey.dailytasks.model.Task
+import com.saurabhtotey.dailytasks.model.TaskValue
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -89,19 +90,12 @@ class TaskDataController private constructor(context: Context) {
 	/**
 	 * Gets the stored value for the given task: defaults to 0
 	 */
-	fun getValueFor(task: Task): Int {
+	fun getValueFor(task: Task): TaskValue {
+		var value = 0
 		if ((this.currentDayTasksData["data"] as JSONObject).keys().asSequence().contains(task.name)) {
-			return (this.currentDayTasksData["data"] as JSONObject).getInt(task.name)
+			value = (this.currentDayTasksData["data"] as JSONObject).getInt(task.name)
 		}
-		return 0
-	}
-
-	/**
-	 * Given a target task, creates an array of relevant values for the target task
-	 * First element of the array is the value of the task itself, and the subsequent values are the values for the sub-tasks in the order they are listed as sub-tasks
-	 */
-	fun getValuesForTask(task: Task): Array<Int> {
-		return Array(task.subTasks.size + 1) { i -> this.getValueFor(if (i == 0) task else task.subTasks[i - 1]) }
+		return TaskValue(value, task.subTasks.map { getValueFor(it) })
 	}
 
 	/**

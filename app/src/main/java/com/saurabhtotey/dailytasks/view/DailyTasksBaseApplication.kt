@@ -105,7 +105,7 @@ class DailyTasksBaseApplication : Application() {
 		class NotificationSender: BroadcastReceiver() {
 			override fun onReceive(context: Context?, intent: Intent?) {
 				val numberOfIncompleteTasks = TaskDataController.get(this@DailyTasksBaseApplication).getPrimaryTasks().count { task ->
-					task.evaluateIsCompleted(TaskDataController.get(this@DailyTasksBaseApplication).getValuesForTask(task)) == false
+					task.evaluateIsCompleted(TaskDataController.get(this@DailyTasksBaseApplication).getValueFor(task)) == false
 				}
 				if (numberOfIncompleteTasks == 0) {
 					return

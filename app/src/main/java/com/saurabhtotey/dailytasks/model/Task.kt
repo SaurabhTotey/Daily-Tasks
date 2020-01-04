@@ -19,16 +19,16 @@ package com.saurabhtotey.dailytasks.model
  * An empty form type (NONE) will record as always 0s
  *
  * TODO: consider passing in a date along with the array of integers to evaluateIsComplete so that the evaluation can account for the date
- * TODO: instead of using array of integers, create a sort of linked-tree structure to store and pass values to allow for arbitrary nestings
+ * TODO: instead of asking evaluateIsCompleted to return a nullable boolean, make it instead return a value from some sort of completion enum to allow for more output/completion states
  * TODO: ideally these tasks would be encoded in some external format like a JSON file so they are more configurable, but that is difficult because tasks also need to specify their completion evaluation logic
  */
-enum class Task(val displayName: String, val description: String, val formType: FormType = FormType.CHECKBOX, val formDescription: String = "", val evaluateIsCompleted: (Array<Int>) -> Boolean? = { it[0] > 0 }, val subTasks: Array<Task> = arrayOf()) {
+enum class Task(val displayName: String, val description: String, val formType: FormType = FormType.CHECKBOX, val formDescription: String = "", val evaluateIsCompleted: (TaskValue) -> Boolean? = { it.value > 0 }, val subTasks: Array<Task> = arrayOf()) {
 	MEDITATE(
 		"Meditate",
 		"Meditate for at least 5 minutes.",
 		FormType.POSITIVE_INTEGER,
 		"minutes",
-		{ it[0] >= 5 }
+		{ it.value >= 5 }
 	),
 	SHOWER(
 		"Shower",
@@ -39,14 +39,14 @@ enum class Task(val displayName: String, val description: String, val formType: 
 		"Brush your teeth at least twice today.",
 		FormType.POSITIVE_INTEGER,
 		"times",
-		{ it[0] >= 2 }
+		{ it.value >= 2 }
 	),
 	PRACTICE(
 		"Practice Piano",
 		"Spend at least 30 minutes practicing the piano. If possible, also practice cello.",
 		FormType.POSITIVE_INTEGER,
 		"minutes",
-		{ it[0] >= 30 }
+		{ it.value >= 30 }
 	),
 	EAT_HEALTHY("Eat Healthy Meals", "Eat healthy meals.", FormType.POSITIVE_INTEGER, "meals"),
 	EAT_MISCELLANEOUS("Eat Meals", "Eat meals.", FormType.POSITIVE_INTEGER, "meals", { null }),
@@ -55,7 +55,7 @@ enum class Task(val displayName: String, val description: String, val formType: 
 		"Eat at least two meals today. At least one of those meals needs to be healthy.",
 		FormType.NONE,
 		"",
-		{ it[1] > 0 && it[1] + it[2] >= 2 },
+		{ it.subTaskValues[0].value > 0 && it.subTaskValues[0].value + it.subTaskValues[1].value >= 2 },
 		arrayOf(EAT_HEALTHY, EAT_MISCELLANEOUS)
 	),
 	EXERCISE(
@@ -63,7 +63,7 @@ enum class Task(val displayName: String, val description: String, val formType: 
 		"Exercise for at least 30 minutes.",
 		FormType.POSITIVE_INTEGER,
 		"minutes",
-		{ it[0] >= 30 }
+		{ it.value >= 30 }
 	),
 	COMMIT(
 		"Commit Code",
@@ -77,14 +77,14 @@ enum class Task(val displayName: String, val description: String, val formType: 
 		"Solve a Problem",
 		"Solve any sort of problem. It could be homework, a personal problem, or anything else."
 	),
-	TALK_NEW("Meet Someone", "Meet and talk with someone you don't know.", FormType.CHECKBOX, "", { if (it[0] > 0) true else null }),
-	TALK_QUESTION("Ask a Question", "Ask anyone any sort of question. It could be clarification, or asking for help, or anything else.", FormType.CHECKBOX, "", { if (it[0] > 0) true else null }),
+	TALK_NEW("Meet Someone", "Meet and talk with someone you don't know.", FormType.CHECKBOX, "", { if (it.value > 0) true else null }),
+	TALK_QUESTION("Ask a Question", "Ask anyone any sort of question. It could be clarification, or asking for help, or anything else.", FormType.CHECKBOX, "", { if (it.value > 0) true else null }),
 	TALK(
 		"Talk",
 		"Either meet a new person or ask someone a legitimate question.",
 		FormType.NONE,
 		"",
-		{ it[1] > 0 || it[2] > 0 },
+		{ it.subTaskValues.any { it.value > 0 } },
 		arrayOf(TALK_NEW, TALK_QUESTION)
 	),
 	JOURNAL(
@@ -96,6 +96,6 @@ enum class Task(val displayName: String, val description: String, val formType: 
 		"Plank with any plank form for at least 4 minutes (240 seconds).",
 		FormType.POSITIVE_INTEGER,
 		"seconds",
-		{ it[0] >= 240 }
+		{ it.value >= 240 }
 	)
 }
