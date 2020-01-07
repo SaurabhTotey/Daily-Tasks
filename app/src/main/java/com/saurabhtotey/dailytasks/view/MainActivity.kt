@@ -33,10 +33,12 @@ import java.util.*
 class MainActivity : AppCompatActivity() {
 
 	private var dateButton: Button? = null
-	private var trackingDate: Calendar? = null
+	private var trackingDate = Calendar.getInstance()
 		set(value) {
-			field = value!!
+			field = value
 			this.dateButton!!.text = SimpleDateFormat("dd/MM/yyyy", Locale.US).format(value.time)
+			this.updateTaskViewsForms()
+			this.updateTaskViewsByCompletion()
 		}
 
 	/**
@@ -46,10 +48,18 @@ class MainActivity : AppCompatActivity() {
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.activity_main)
 
+		//Populates the view with tasks
+		val taskContainer = this.findViewById<LinearLayout>(R.id.TaskContainer)
+		TaskDataController.get(this).getPrimaryTasks().forEach { task ->
+			val taskView = LayoutInflater.from(this).inflate(R.layout.task, taskContainer, false)
+			taskContainer.addView(taskView)
+			this.populateTaskView(taskView, task)
+		}
+
 		//Sets up functionality for the dateButton
 		this.dateButton = this.findViewById(R.id.DateButton)
 		this.trackingDate = Calendar.getInstance()
-		this.dateButton!!.setOnClickListener { _ ->
+		this.dateButton!!.setOnClickListener {
 			DatePickerDialog(
 				this,
 				{_, year, month, day ->
@@ -58,22 +68,12 @@ class MainActivity : AppCompatActivity() {
 					newDate.set(Calendar.MONTH, month)
 					newDate.set(Calendar.DATE, day)
 					this.trackingDate = newDate
-					this.updateTaskViews()
 				},
-				this.trackingDate!!.get(Calendar.YEAR),
-				this.trackingDate!!.get(Calendar.MONTH),
-				this.trackingDate!!.get(Calendar.DATE)
+				this.trackingDate.get(Calendar.YEAR),
+				this.trackingDate.get(Calendar.MONTH),
+				this.trackingDate.get(Calendar.DATE)
 			).show()
 		}
-
-		//Populates the view with tasks
-		val taskContainer = this.findViewById<LinearLayout>(R.id.TaskContainer)
-		TaskDataController.get(this).getPrimaryTasks().forEach { task ->
-			val taskView = LayoutInflater.from(this).inflate(R.layout.task, taskContainer, false)
-			taskContainer.addView(taskView)
-			this.populateTaskView(taskView, task)
-		}
-		this.updateTaskViews()
 	}
 
 	/**
@@ -102,20 +102,18 @@ class MainActivity : AppCompatActivity() {
 		if (task.formType == FormType.CHECKBOX) {
 			val checkBox = taskView.findViewById<CheckBox>(R.id.TaskCheckBox)
 			checkBox.visibility = View.VISIBLE
-			checkBox.isChecked = TaskDataController.get(this).getValueFor(task, this.trackingDate!!).value > 0
 			checkBox.setOnCheckedChangeListener { _, isChecked ->
-				TaskDataController.get(this).setValueForTask(task, if (isChecked) 1 else 0, this.trackingDate!!)
-				this.updateTaskViews()
+				TaskDataController.get(this).setValueForTask(task, if (isChecked) 1 else 0, this.trackingDate)
+				this.updateTaskViewsByCompletion()
 			}
 		} else if (task.formType == FormType.POSITIVE_INTEGER) {
 			val numberInput = taskView.findViewById<EditText>(R.id.TaskNumberInput)
 			numberInput.visibility = View.VISIBLE
-			numberInput.setText("${TaskDataController.get(this).getValueFor(task, this.trackingDate!!).value}")
 			numberInput.addTextChangedListener(object : TextWatcher {
 				override fun afterTextChanged(p0: Editable?) {
 					val numberInputValue = numberInput.text.toString().toIntOrNull() ?: return
-					TaskDataController.get(this@MainActivity).setValueForTask(task, numberInputValue, this@MainActivity.trackingDate!!)
-					this@MainActivity.updateTaskViews()
+					TaskDataController.get(this@MainActivity).setValueForTask(task, numberInputValue, this@MainActivity.trackingDate)
+					this@MainActivity.updateTaskViewsByCompletion()
 				}
 				override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
 				override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
@@ -147,7 +145,7 @@ class MainActivity : AppCompatActivity() {
 			val subTaskExpansionButton = taskView.findViewById<ImageButton>(R.id.ExpandSubTasksButton)
 			subTaskExpansionButton.visibility = View.VISIBLE
 			var isExpanded = false
-			subTaskExpansionButton.setOnClickListener() {
+			subTaskExpansionButton.setOnClickListener {
 				if (isExpanded) {
 					subTaskContainer.visibility = View.GONE
 					subTaskExpansionButton.setImageDrawable(this.resources.getDrawable(android.R.drawable.arrow_down_float, this.theme))
@@ -163,10 +161,12 @@ class MainActivity : AppCompatActivity() {
 	/**
 	 * Updates the appearance for all taskViews based off of their completion
 	 */
-	private fun updateTaskViews() {
+	private fun updateTaskViewsByCompletion() {
+		val root = this.findViewById<LinearLayout>(R.id.TaskContainer)
 		Task.values().forEach { task ->
-			val completion = task.evaluateIsCompleted(TaskDataController.get(this).getValueFor(task, this.trackingDate!!))
-			this.findViewById<LinearLayout>(R.id.TaskContainer).findViewWithTag<RelativeLayout>(task.name).background = this.resources.getDrawable(
+			val view = root.findViewWithTag<RelativeLayout>(task.name)
+			val completion = task.evaluateIsCompleted(TaskDataController.get(this).getValueFor(task, this.trackingDate))
+			view.background = this.resources.getDrawable(
 				when (completion) {
 					null -> R.color.taskCompletionIrrelevant
 					true -> R.color.taskComplete
@@ -174,6 +174,29 @@ class MainActivity : AppCompatActivity() {
 				},
 				this.theme
 			)
+		}
+	}
+
+	/**
+	 * Updates the forms for all taskViews
+	 */
+	private fun updateTaskViewsForms() {
+		val root = this.findViewById<LinearLayout>(R.id.TaskContainer)
+		Task.values().forEach { task ->
+			val view = root.findViewWithTag<RelativeLayout>(task.name)
+			if (task.formType == FormType.CHECKBOX) {
+				val checkBox = view.findViewById<CheckBox>(R.id.TaskCheckBox)
+				val newValue = TaskDataController.get(this).getValueFor(task, this.trackingDate).value > 0
+				if (checkBox.isChecked != newValue) {
+					checkBox.isChecked = newValue
+				}
+			} else if (task.formType == FormType.POSITIVE_INTEGER) {
+				val editText = view.findViewById<EditText>(R.id.TaskNumberInput)
+				val newValue = "${TaskDataController.get(this).getValueFor(task, this.trackingDate).value}"
+				if (editText.text.toString() != newValue) {
+					editText.setText("${TaskDataController.get(this).getValueFor(task, this.trackingDate).value}")
+				}
+			}
 		}
 	}
 
