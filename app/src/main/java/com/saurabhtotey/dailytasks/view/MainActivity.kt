@@ -16,6 +16,7 @@ import com.saurabhtotey.dailytasks.R
 import com.saurabhtotey.dailytasks.TaskDataController
 import com.saurabhtotey.dailytasks.model.FormType
 import com.saurabhtotey.dailytasks.model.Task
+import java.util.*
 
 /**
  * The main view for this application
@@ -26,9 +27,11 @@ import com.saurabhtotey.dailytasks.model.Task
  * Tasks have a green background when considered complete, red for incomplete, and white for when completion is meaningless in the context of the task
  * Handles the expanding/collapsing of task descriptions when tasks get selected
  * TODO: may eventually allow for navigation to another view that shows stats and data
- * TODO: have a date picker that only shows dates up to today (where today is determined as late as possible in case the date changes while app is open) to put into TaskDataController.initializeDayData
  */
 class MainActivity : AppCompatActivity() {
+
+	//TODO: set DateButton text to this date and when DateButton is clicked, open a date picking dialog that will update this
+	var trackingDate: Date = Calendar.getInstance().time
 
 	/**
 	 * Main entry point for the app
@@ -73,19 +76,19 @@ class MainActivity : AppCompatActivity() {
 		if (task.formType == FormType.CHECKBOX) {
 			val checkBox = taskView.findViewById<CheckBox>(R.id.TaskCheckBox)
 			checkBox.visibility = View.VISIBLE
-			checkBox.isChecked = TaskDataController.get(this).getValueFor(task).value > 0
+			checkBox.isChecked = TaskDataController.get(this).getValueFor(task, this.trackingDate).value > 0
 			checkBox.setOnCheckedChangeListener { _, isChecked ->
-				TaskDataController.get(this).setValueForTask(task, if (isChecked) 1 else 0)
+				TaskDataController.get(this).setValueForTask(task, if (isChecked) 1 else 0, this.trackingDate)
 				this.updateTaskViews()
 			}
 		} else if (task.formType == FormType.POSITIVE_INTEGER) {
 			val numberInput = taskView.findViewById<EditText>(R.id.TaskNumberInput)
 			numberInput.visibility = View.VISIBLE
-			numberInput.setText("${TaskDataController.get(this).getValueFor(task).value}")
+			numberInput.setText("${TaskDataController.get(this).getValueFor(task, this.trackingDate).value}")
 			numberInput.addTextChangedListener(object : TextWatcher {
 				override fun afterTextChanged(p0: Editable?) {
 					val numberInputValue = numberInput.text.toString().toIntOrNull() ?: return
-					TaskDataController.get(this@MainActivity).setValueForTask(task, numberInputValue)
+					TaskDataController.get(this@MainActivity).setValueForTask(task, numberInputValue, this@MainActivity.trackingDate)
 					this@MainActivity.updateTaskViews()
 				}
 				override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
@@ -136,7 +139,7 @@ class MainActivity : AppCompatActivity() {
 	 */
 	private fun updateTaskViews() {
 		Task.values().forEach { task ->
-			val completion = task.evaluateIsCompleted(TaskDataController.get(this).getValueFor(task))
+			val completion = task.evaluateIsCompleted(TaskDataController.get(this).getValueFor(task, this.trackingDate))
 			this.findViewById<LinearLayout>(R.id.TaskContainer).findViewWithTag<RelativeLayout>(task.name).background = this.resources.getDrawable(
 				when (completion) {
 					null -> R.color.taskCompletionIrrelevant

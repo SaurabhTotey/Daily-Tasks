@@ -30,12 +30,6 @@ class TaskDataController private constructor(context: Context) {
 
 	private val file = File(context.filesDir, "TaskData.json")
 	private var fileData: JSONArray
-	private var currentDayTasksDataIndex = -1
-		set(value) {
-			field = value
-			this.currentDayTasksData = this.fileData[field] as JSONObject
-		}
-	private var currentDayTasksData = JSONObject()
 
 	/**
 	 * Parses the data file
@@ -47,30 +41,30 @@ class TaskDataController private constructor(context: Context) {
 			this.file.writeText("[]")
 		}
 		this.fileData = JSONArray(this.file.readLines().joinToString("\n"))
-		this.initializeDayData(Calendar.getInstance().time)
 	}
 
-	/**
-	 * Ensures that data for the given day exists
-	 */
-	fun initializeDayData(date: Date) {
+	private fun getIndexForDayDataFor(date: Date): Int {
 		val currentDate = this.getDateString(date)
 		val indexOfCurrentDate = (0 until this.fileData.length()).firstOrNull { (this.fileData[it] as JSONObject).getString("date") == currentDate }
-		if (indexOfCurrentDate == null) {
-			this.currentDayTasksData = JSONObject()
-			this.currentDayTasksData.put("date", currentDate)
-			this.currentDayTasksData.put("data", JSONObject())
-			(this.fileData.length() downTo 1).forEach { i -> this.fileData.put(i, this.fileData.get(i - 1)) }
-			this.fileData.put(0, this.currentDayTasksData)
-			this.currentDayTasksDataIndex = 0
-			(this.fileData.length() - 1 downTo 1).forEach { i ->
-				if (((this.fileData[i] as JSONObject)["data"] as JSONObject).length() == 0) {
-					this.fileData.remove(i)
-				}
-			}
-		} else {
-			this.currentDayTasksDataIndex = indexOfCurrentDate
+		if (indexOfCurrentDate != null) {
+			return indexOfCurrentDate
 		}
+		val currentDayTasksData = JSONObject()
+		currentDayTasksData.put("date", currentDate)
+		currentDayTasksData.put("data", JSONObject())
+		(this.fileData.length() downTo 1).forEach { i -> this.fileData.put(i, this.fileData.get(i - 1)) }
+		this.fileData.put(0, currentDayTasksData)
+		(this.fileData.length() - 1 downTo 1).forEach { i ->
+			if (((this.fileData[i] as JSONObject)["data"] as JSONObject).length() == 0) {
+				this.fileData.remove(i)
+			}
+		}
+		this.file.writeText(this.fileData.toString())
+		return 0
+	}
+
+	private fun getDayDataFor(date: Date): JSONObject {
+		return (this.fileData[this.getIndexForDayDataFor(date)] as JSONObject)["data"] as JSONObject
 	}
 
 	/**
@@ -81,37 +75,32 @@ class TaskDataController private constructor(context: Context) {
 	}
 
 	/**
-	 * Updates all JSON objects and ensures that the file is up-to-date
-	 * Should be called whenever currentDayTasksData is updated or fileData is updated
-	 * Changes from currentDayTasksData take highest precedence (eg. will overwrite changes made in fileData if they differ)
-	 */
-	private fun updateFileData() {
-		this.fileData.put(this.currentDayTasksDataIndex, this.currentDayTasksData)
-		file.writeText(fileData.toString())
-	}
-
-	/**
 	 * Gets the stored value for the given task: defaults to 0
 	 */
-	fun getValueFor(task: Task): TaskValue {
+	fun getValueFor(task: Task, date: Date): TaskValue {
 		var value = 0
-		if ((this.currentDayTasksData["data"] as JSONObject).keys().asSequence().contains(task.name)) {
-			value = (this.currentDayTasksData["data"] as JSONObject).getInt(task.name)
+		if (this.getDayDataFor(date).keys().asSequence().contains(task.name)) {
+			value = this.getDayDataFor(date).getInt(task.name)
 		}
-		return TaskValue(value, task.subTasks.map { getValueFor(it) })
+		return TaskValue(value, task.subTasks.map { getValueFor(it, date) })
 	}
 
 	/**
 	 * Updates the given task to have the given value
 	 * If a value is set to 0, the task is just removed from the data as an omission defaults to 0
 	 */
-	fun setValueForTask(task: Task, value: Int) {
+	fun setValueForTask(task: Task, value: Int, date: Date) {
+		val updatedData = this.getDayDataFor(date)
 		if (value == 0) {
-			(this.currentDayTasksData["data"] as JSONObject).remove(task.name)
+			updatedData.remove(task.name)
 		} else {
-			(this.currentDayTasksData["data"] as JSONObject).put(task.name, value)
+			updatedData.put(task.name, value)
 		}
-		this.updateFileData()
+		val fullDayObjectIndex = this.getIndexForDayDataFor(date)
+		val fullDayObject = this.fileData[fullDayObjectIndex] as JSONObject
+		fullDayObject.put("data", updatedData)
+		this.fileData.put(fullDayObjectIndex, fullDayObject)
+		this.file.writeText(this.fileData.toString())
 	}
 
 	/**

@@ -1,5 +1,6 @@
 <resources>
 	<string name="app_name">Daily Tasks</string>
+	<string name="current_date">Displaying task data for</string>
 	<string name="expand_sub_tasks_button_description">Expands sub-tasks for the current task.</string>
 	<string name="form_number_input_hint">0</string>
 	<string name="notification_channel_name">Task Completion Notifications</string>
