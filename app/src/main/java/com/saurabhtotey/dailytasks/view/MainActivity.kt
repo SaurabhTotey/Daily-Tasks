@@ -26,6 +26,7 @@ import com.saurabhtotey.dailytasks.model.Task
  * Tasks have a green background when considered complete, red for incomplete, and white for when completion is meaningless in the context of the task
  * Handles the expanding/collapsing of task descriptions when tasks get selected
  * TODO: may eventually allow for navigation to another view that shows stats and data
+ * TODO: have a date picker that only shows dates up to today (where today is determined as late as possible in case the date changes while app is open) to put into TaskDataController.initializeDayData
  */
 class MainActivity : AppCompatActivity() {
 

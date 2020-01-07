@@ -30,7 +30,12 @@ class TaskDataController private constructor(context: Context) {
 
 	private val file = File(context.filesDir, "TaskData.json")
 	private var fileData: JSONArray
-	private var currentDayTasksData: JSONObject = JSONObject()
+	private var currentDayTasksDataIndex = -1
+		set(value) {
+			field = value
+			this.currentDayTasksData = this.fileData[field] as JSONObject
+		}
+	private var currentDayTasksData = JSONObject()
 
 	/**
 	 * Parses the data file
@@ -42,39 +47,37 @@ class TaskDataController private constructor(context: Context) {
 			this.file.writeText("[]")
 		}
 		this.fileData = JSONArray(this.file.readLines().joinToString("\n"))
-		this.initializeNewDayData()
+		this.initializeDayData(Calendar.getInstance().time)
 	}
 
 	/**
-	 * Gets task data for today from fileData
-	 * If no data on file for today, create an entry
-	 * Guarantees that today's entry is the first entry of fileData
-	 * Removes entries with no data
-	 * Must be called again if the app is open but the date changes
+	 * Ensures that data for the given day exists
 	 */
-	fun initializeNewDayData() {
-		val currentDate = this.getDateString()
-		if (this.fileData.length() == 0 || (this.fileData[0] as JSONObject).getString("date") != currentDate) {
+	fun initializeDayData(date: Date) {
+		val currentDate = this.getDateString(date)
+		val indexOfCurrentDate = (0 until this.fileData.length()).firstOrNull { (this.fileData[it] as JSONObject).getString("date") == currentDate }
+		if (indexOfCurrentDate == null) {
 			this.currentDayTasksData = JSONObject()
 			this.currentDayTasksData.put("date", currentDate)
 			this.currentDayTasksData.put("data", JSONObject())
 			(this.fileData.length() downTo 1).forEach { i -> this.fileData.put(i, this.fileData.get(i - 1)) }
-			this.handleUpdate()
-			(this.fileData.length() downTo 1).forEach { i ->
-				if (((this.fileData[i] as JSONObject)["data"] as JSONArray).length() == 0) {
+			this.fileData.put(0, this.currentDayTasksData)
+			this.currentDayTasksDataIndex = 0
+			(this.fileData.length() - 1 downTo 1).forEach { i ->
+				if (((this.fileData[i] as JSONObject)["data"] as JSONObject).length() == 0) {
 					this.fileData.remove(i)
 				}
 			}
 		} else {
-			this.currentDayTasksData = this.fileData.get(0) as JSONObject
+			this.currentDayTasksDataIndex = indexOfCurrentDate
 		}
 	}
 
 	/**
-	 * Returns today's date in a machine-parsable string
+	 * Returns the given date in a machine-parsable string
 	 */
-	private fun getDateString(): String {
-		return SimpleDateFormat("ddMMyyyy", Locale.US).format(Calendar.getInstance().time)
+	private fun getDateString(date: Date): String {
+		return SimpleDateFormat("ddMMyyyy", Locale.US).format(date)
 	}
 
 	/**
@@ -82,8 +85,8 @@ class TaskDataController private constructor(context: Context) {
 	 * Should be called whenever currentDayTasksData is updated or fileData is updated
 	 * Changes from currentDayTasksData take highest precedence (eg. will overwrite changes made in fileData if they differ)
 	 */
-	private fun handleUpdate() {
-		this.fileData.put(0, this.currentDayTasksData)
+	private fun updateFileData() {
+		this.fileData.put(this.currentDayTasksDataIndex, this.currentDayTasksData)
 		file.writeText(fileData.toString())
 	}
 
@@ -108,7 +111,7 @@ class TaskDataController private constructor(context: Context) {
 		} else {
 			(this.currentDayTasksData["data"] as JSONObject).put(task.name, value)
 		}
-		this.handleUpdate()
+		this.updateFileData()
 	}
 
 	/**
