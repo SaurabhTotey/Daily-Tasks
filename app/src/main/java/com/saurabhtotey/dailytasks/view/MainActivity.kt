@@ -63,10 +63,13 @@ class MainActivity : AppCompatActivity() {
 			DatePickerDialog(
 				this,
 				{_, year, month, day ->
-					val newDate = Calendar.getInstance()
+					var newDate = Calendar.getInstance()
 					newDate.set(Calendar.YEAR, year)
 					newDate.set(Calendar.MONTH, month)
 					newDate.set(Calendar.DATE, day)
+					if (newDate > Calendar.getInstance()) {
+						newDate = Calendar.getInstance() //Do not allow editing for the future
+					}
 					this.trackingDate = newDate
 				},
 				this.trackingDate.get(Calendar.YEAR),
