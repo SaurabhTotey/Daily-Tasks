@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+	<color name="datePickerThemeColor">#808080</color>
 	<color name="colorAccent">#FFFFFF</color>
 	<color name="taskComplete">#7BC17E</color>
 	<color name="taskIncomplete">#FF5C5C</color>

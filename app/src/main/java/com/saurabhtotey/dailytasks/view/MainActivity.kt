@@ -36,7 +36,7 @@ class MainActivity : AppCompatActivity() {
 	private var trackingDate = Calendar.getInstance()
 		set(value) {
 			field = value
-			this.dateButton!!.text = SimpleDateFormat("dd/MM/yyyy", Locale.US).format(value.time)
+			this.dateButton!!.text = SimpleDateFormat.getDateInstance().format(value.time)
 			this.updateTaskViewsForms()
 			this.updateTaskViewsByCompletion()
 		}

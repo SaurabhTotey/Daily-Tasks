@@ -2,7 +2,12 @@
 
 	<!-- Base application theme. -->
 	<style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+		<item name="android:datePickerDialogTheme">@style/DateDialogStyle</item>
 		<item name="colorAccent">@color/colorAccent</item>
+	</style>
+
+	<style name="DateDialogStyle" parent="android:Theme.Material.Light.Dialog">
+		<item name="android:colorAccent">@color/datePickerThemeColor</item>
 	</style>
 
 </resources>
