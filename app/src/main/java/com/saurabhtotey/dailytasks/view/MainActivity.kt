@@ -32,6 +32,8 @@ import java.util.*
  */
 class MainActivity : AppCompatActivity() {
 
+	private var tasksRoot: LinearLayout? = null
+
 	private var dateButton: Button? = null
 	private var trackingDate = Calendar.getInstance()
 		set(value) {
@@ -39,6 +41,17 @@ class MainActivity : AppCompatActivity() {
 			this.dateButton!!.text = SimpleDateFormat.getDateInstance().format(value.time)
 			this.updateTaskViewsForms()
 			this.updateTaskViewsByCompletion()
+		}
+
+	private var expandSubTasksButton: ImageButton? = null
+	private var numberOfExpandedDescriptions = 0
+	private var numberOfExpandedSubTasks = 0
+		set(value) {
+			field = value
+			this.expandSubTasksButton!!.setImageDrawable(this.resources.getDrawable(
+				if (value == 0) android.R.drawable.arrow_down_float else android.R.drawable.arrow_up_float,
+				this.theme
+			))
 		}
 
 	/**
@@ -49,11 +62,47 @@ class MainActivity : AppCompatActivity() {
 		setContentView(R.layout.activity_main)
 
 		//Populates the view with tasks
-		val taskContainer = this.findViewById<LinearLayout>(R.id.TaskContainer)
+		this.tasksRoot = this.findViewById(R.id.TaskContainer)
 		TaskDataController.get(this).getPrimaryTasks().forEach { task ->
-			val taskView = LayoutInflater.from(this).inflate(R.layout.task, taskContainer, false)
-			taskContainer.addView(taskView)
+			val taskView = LayoutInflater.from(this).inflate(R.layout.task, this.tasksRoot!!, false)
+			this.tasksRoot!!.addView(taskView)
 			this.populateTaskView(taskView, task)
+		}
+
+		//Sets up the expand/collapse all descriptions and expand/collapse all sub-tasks buttons
+		this.expandSubTasksButton = this.findViewById(R.id.ExpandAllSubTasksButton)
+		this.expandSubTasksButton!!.setOnClickListener {
+			if (this.numberOfExpandedSubTasks == 0) {
+				Task.values().forEach { task ->
+					val view = this.tasksRoot!!.findViewWithTag<RelativeLayout>(task.name)
+					val expandCollapseButton = view.findViewById<ImageButton>(R.id.ExpandSubTasksButton)
+					if (expandCollapseButton.visibility == View.VISIBLE) {
+						view.findViewById<LinearLayout>(R.id.SubTaskContainer).visibility = View.VISIBLE
+						expandCollapseButton.setImageDrawable(this.resources.getDrawable(android.R.drawable.arrow_up_float, this.theme))
+						this.numberOfExpandedSubTasks += 1
+					}
+				}
+			} else {
+				Task.values().forEach { task ->
+					val view = this.tasksRoot!!.findViewWithTag<RelativeLayout>(task.name)
+					view.findViewById<LinearLayout>(R.id.SubTaskContainer).visibility = View.GONE
+					view.findViewById<ImageButton>(R.id.ExpandSubTasksButton).setImageDrawable(this.resources.getDrawable(android.R.drawable.arrow_down_float, this.theme))
+				}
+				this.numberOfExpandedSubTasks = 0
+			}
+		}
+		this.findViewById<Button>(R.id.ExpandAllDescriptionsButton).setOnClickListener {
+			if (this.numberOfExpandedDescriptions == 0) {
+				Task.values().forEach { task ->
+					this.tasksRoot!!.findViewWithTag<RelativeLayout>(task.name).findViewById<TextView>(R.id.TaskDescription).visibility = View.VISIBLE
+				}
+				this.numberOfExpandedDescriptions = Task.values().size
+			} else {
+				Task.values().forEach { task ->
+					this.tasksRoot!!.findViewWithTag<RelativeLayout>(task.name).findViewById<TextView>(R.id.TaskDescription).visibility = View.GONE
+				}
+				this.numberOfExpandedDescriptions = 0
+			}
 		}
 
 		//Sets up functionality for the dateButton
@@ -98,7 +147,13 @@ class MainActivity : AppCompatActivity() {
 
 		//Implements that when tasks are clicked, they toggle the visibility of their descriptions
 		taskView.setOnClickListener {
-			taskDescriptionView.visibility = if (taskDescriptionView.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+			taskDescriptionView.visibility = if (taskDescriptionView.visibility == View.VISIBLE) {
+				this.numberOfExpandedDescriptions -= 1
+				View.GONE
+			} else {
+				this.numberOfExpandedDescriptions += 1
+				View.VISIBLE
+			}
 		}
 
 		//Creates task form controls and links it up with the TaskDataController to keep data up to date
@@ -147,16 +202,16 @@ class MainActivity : AppCompatActivity() {
 		if (task.subTasks.isNotEmpty()) {
 			val subTaskExpansionButton = taskView.findViewById<ImageButton>(R.id.ExpandSubTasksButton)
 			subTaskExpansionButton.visibility = View.VISIBLE
-			var isExpanded = false
 			subTaskExpansionButton.setOnClickListener {
-				if (isExpanded) {
+				if (subTaskContainer.visibility == View.VISIBLE) {
 					subTaskContainer.visibility = View.GONE
 					subTaskExpansionButton.setImageDrawable(this.resources.getDrawable(android.R.drawable.arrow_down_float, this.theme))
+					this.numberOfExpandedSubTasks -= 1
 				} else {
 					subTaskContainer.visibility = View.VISIBLE
 					subTaskExpansionButton.setImageDrawable(this.resources.getDrawable(android.R.drawable.arrow_up_float, this.theme))
+					this.numberOfExpandedSubTasks += 1
 				}
-				isExpanded = !isExpanded
 			}
 		}
 	}
@@ -165,9 +220,8 @@ class MainActivity : AppCompatActivity() {
 	 * Updates the appearance for all taskViews based off of their completion
 	 */
 	private fun updateTaskViewsByCompletion() {
-		val root = this.findViewById<LinearLayout>(R.id.TaskContainer)
 		Task.values().forEach { task ->
-			val view = root.findViewWithTag<RelativeLayout>(task.name)
+			val view = this.tasksRoot!!.findViewWithTag<RelativeLayout>(task.name)
 			val completion = task.evaluateIsCompleted(TaskDataController.get(this).getValueFor(task, this.trackingDate))
 			view.background = this.resources.getDrawable(
 				when (completion) {
@@ -184,9 +238,8 @@ class MainActivity : AppCompatActivity() {
 	 * Updates the forms for all taskViews
 	 */
 	private fun updateTaskViewsForms() {
-		val root = this.findViewById<LinearLayout>(R.id.TaskContainer)
 		Task.values().forEach { task ->
-			val view = root.findViewWithTag<RelativeLayout>(task.name)
+			val view = this.tasksRoot!!.findViewWithTag<RelativeLayout>(task.name)
 			if (task.formType == FormType.CHECKBOX) {
 				val checkBox = view.findViewById<CheckBox>(R.id.TaskCheckBox)
 				val newValue = TaskDataController.get(this).getValueFor(task, this.trackingDate).value > 0
