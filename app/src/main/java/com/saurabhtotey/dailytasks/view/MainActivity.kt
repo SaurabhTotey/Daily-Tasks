@@ -1,5 +1,6 @@
 package com.saurabhtotey.dailytasks.view
 
+import android.app.DatePickerDialog
 import android.content.Context
 import android.graphics.Rect
 import android.os.Bundle
@@ -16,6 +17,7 @@ import com.saurabhtotey.dailytasks.R
 import com.saurabhtotey.dailytasks.TaskDataController
 import com.saurabhtotey.dailytasks.model.FormType
 import com.saurabhtotey.dailytasks.model.Task
+import java.text.SimpleDateFormat
 import java.util.*
 
 /**
@@ -30,8 +32,12 @@ import java.util.*
  */
 class MainActivity : AppCompatActivity() {
 
-	//TODO: set DateButton text to this date and when DateButton is clicked, open a date picking dialog that will update this
-	var trackingDate: Date = Calendar.getInstance().time
+	private var dateButton: Button? = null
+	private var trackingDate: Calendar? = null
+		set(value) {
+			field = value!!
+			this.dateButton!!.text = SimpleDateFormat("dd/MM/yyyy", Locale.US).format(value.time)
+		}
 
 	/**
 	 * Main entry point for the app
@@ -39,6 +45,26 @@ class MainActivity : AppCompatActivity() {
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.activity_main)
+
+		//Sets up functionality for the dateButton
+		this.dateButton = this.findViewById(R.id.DateButton)
+		this.trackingDate = Calendar.getInstance()
+		this.dateButton!!.setOnClickListener { _ ->
+			DatePickerDialog(
+				this,
+				{_, year, month, day ->
+					val newDate = Calendar.getInstance()
+					newDate.set(Calendar.YEAR, year)
+					newDate.set(Calendar.MONTH, month)
+					newDate.set(Calendar.DATE, day)
+					this.trackingDate = newDate
+					this.updateTaskViews()
+				},
+				this.trackingDate!!.get(Calendar.YEAR),
+				this.trackingDate!!.get(Calendar.MONTH),
+				this.trackingDate!!.get(Calendar.DATE)
+			).show()
+		}
 
 		//Populates the view with tasks
 		val taskContainer = this.findViewById<LinearLayout>(R.id.TaskContainer)
@@ -76,19 +102,19 @@ class MainActivity : AppCompatActivity() {
 		if (task.formType == FormType.CHECKBOX) {
 			val checkBox = taskView.findViewById<CheckBox>(R.id.TaskCheckBox)
 			checkBox.visibility = View.VISIBLE
-			checkBox.isChecked = TaskDataController.get(this).getValueFor(task, this.trackingDate).value > 0
+			checkBox.isChecked = TaskDataController.get(this).getValueFor(task, this.trackingDate!!).value > 0
 			checkBox.setOnCheckedChangeListener { _, isChecked ->
-				TaskDataController.get(this).setValueForTask(task, if (isChecked) 1 else 0, this.trackingDate)
+				TaskDataController.get(this).setValueForTask(task, if (isChecked) 1 else 0, this.trackingDate!!)
 				this.updateTaskViews()
 			}
 		} else if (task.formType == FormType.POSITIVE_INTEGER) {
 			val numberInput = taskView.findViewById<EditText>(R.id.TaskNumberInput)
 			numberInput.visibility = View.VISIBLE
-			numberInput.setText("${TaskDataController.get(this).getValueFor(task, this.trackingDate).value}")
+			numberInput.setText("${TaskDataController.get(this).getValueFor(task, this.trackingDate!!).value}")
 			numberInput.addTextChangedListener(object : TextWatcher {
 				override fun afterTextChanged(p0: Editable?) {
 					val numberInputValue = numberInput.text.toString().toIntOrNull() ?: return
-					TaskDataController.get(this@MainActivity).setValueForTask(task, numberInputValue, this@MainActivity.trackingDate)
+					TaskDataController.get(this@MainActivity).setValueForTask(task, numberInputValue, this@MainActivity.trackingDate!!)
 					this@MainActivity.updateTaskViews()
 				}
 				override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
@@ -139,7 +165,7 @@ class MainActivity : AppCompatActivity() {
 	 */
 	private fun updateTaskViews() {
 		Task.values().forEach { task ->
-			val completion = task.evaluateIsCompleted(TaskDataController.get(this).getValueFor(task, this.trackingDate))
+			val completion = task.evaluateIsCompleted(TaskDataController.get(this).getValueFor(task, this.trackingDate!!))
 			this.findViewById<LinearLayout>(R.id.TaskContainer).findViewWithTag<RelativeLayout>(task.name).background = this.resources.getDrawable(
 				when (completion) {
 					null -> R.color.taskCompletionIrrelevant

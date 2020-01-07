@@ -82,8 +82,9 @@ class NotificationSender: BroadcastReceiver() {
 		scheduleNotification(context)
 
 		//Counts incomplete tasks and doesn't send a notification if there are no remaining tasks
+		val today = Calendar.getInstance()
 		val numberOfIncompleteTasks = TaskDataController.get(context).getPrimaryTasks().count { task ->
-			task.evaluateIsCompleted(TaskDataController.get(context).getValueFor(task, Calendar.getInstance().time)) == false
+			task.evaluateIsCompleted(TaskDataController.get(context).getValueFor(task, today)) == false
 		}
 		if (numberOfIncompleteTasks == 0) {
 			return

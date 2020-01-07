@@ -43,7 +43,7 @@ class TaskDataController private constructor(context: Context) {
 		this.fileData = JSONArray(this.file.readLines().joinToString("\n"))
 	}
 
-	private fun getIndexForDayDataFor(date: Date): Int {
+	private fun getIndexForDayDataFor(date: Calendar): Int {
 		val currentDate = this.getDateString(date)
 		val indexOfCurrentDate = (0 until this.fileData.length()).firstOrNull { (this.fileData[it] as JSONObject).getString("date") == currentDate }
 		if (indexOfCurrentDate != null) {
@@ -63,21 +63,21 @@ class TaskDataController private constructor(context: Context) {
 		return 0
 	}
 
-	private fun getDayDataFor(date: Date): JSONObject {
+	private fun getDayDataFor(date: Calendar): JSONObject {
 		return (this.fileData[this.getIndexForDayDataFor(date)] as JSONObject)["data"] as JSONObject
 	}
 
 	/**
 	 * Returns the given date in a machine-parsable string
 	 */
-	private fun getDateString(date: Date): String {
-		return SimpleDateFormat("ddMMyyyy", Locale.US).format(date)
+	private fun getDateString(date: Calendar): String {
+		return SimpleDateFormat("ddMMyyyy", Locale.US).format(date.time)
 	}
 
 	/**
 	 * Gets the stored value for the given task: defaults to 0
 	 */
-	fun getValueFor(task: Task, date: Date): TaskValue {
+	fun getValueFor(task: Task, date: Calendar): TaskValue {
 		var value = 0
 		if (this.getDayDataFor(date).keys().asSequence().contains(task.name)) {
 			value = this.getDayDataFor(date).getInt(task.name)
@@ -89,7 +89,7 @@ class TaskDataController private constructor(context: Context) {
 	 * Updates the given task to have the given value
 	 * If a value is set to 0, the task is just removed from the data as an omission defaults to 0
 	 */
-	fun setValueForTask(task: Task, value: Int, date: Date) {
+	fun setValueForTask(task: Task, value: Int, date: Calendar) {
 		val updatedData = this.getDayDataFor(date)
 		if (value == 0) {
 			updatedData.remove(task.name)
