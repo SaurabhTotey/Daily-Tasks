@@ -12,7 +12,8 @@
 	<RelativeLayout
 		android:id="@+id/ControlForm"
 		android:layout_width="match_parent"
-		android:layout_height="wrap_content">
+		android:layout_height="wrap_content"
+		android:layout_alignParentBottom="true">
 
 		<ImageButton
 			android:id="@+id/ExpandAllSubTasksButton"
@@ -49,7 +50,7 @@
 	<ScrollView
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
-		android:layout_below="@+id/ControlForm">
+		android:layout_above="@+id/ControlForm">
 
 		<LinearLayout
 			android:id="@+id/TaskContainer"
