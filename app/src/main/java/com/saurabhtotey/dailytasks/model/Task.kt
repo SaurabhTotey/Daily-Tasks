@@ -19,16 +19,15 @@ package com.saurabhtotey.dailytasks.model
  * An empty form type (NONE) will record as always 0s
  *
  * TODO: consider passing in a date along with the array of integers to evaluateIsComplete so that the evaluation can account for the date
- * TODO: instead of asking evaluateIsCompleted to return a nullable boolean, make it instead return a value from some sort of completion enum to allow for more output/completion states
  * TODO: ideally these tasks would be encoded in some external format like a JSON file so they are more configurable, but that is difficult because tasks also need to specify their completion evaluation logic
  */
-enum class Task(val displayName: String, val description: String, val formType: FormType = FormType.CHECKBOX, val formDescription: String = "", val evaluateIsCompleted: (TaskValue) -> Boolean? = { it.value > 0 }, val subTasks: Array<Task> = arrayOf()) {
+enum class Task(val displayName: String, val description: String, val formType: FormType = FormType.CHECKBOX, val formDescription: String = "", val evaluateIsCompleted: (TaskValue) -> TaskStatus = { if (it.value > 0) TaskStatus.COMPLETE else TaskStatus.INCOMPLETE }, val subTasks: Array<Task> = arrayOf()) {
 	MEDITATE(
 		"Meditate",
 		"Meditate for at least 5 minutes.",
 		FormType.POSITIVE_INTEGER,
 		"minutes",
-		{ it.value >= 5 }
+		{ if (it.value >= 15) TaskStatus.BEYOND_COMPLETE else if (it.value >= 5) TaskStatus.COMPLETE else TaskStatus.INCOMPLETE }
 	),
 	SHOWER(
 		"Shower",
@@ -39,23 +38,34 @@ enum class Task(val displayName: String, val description: String, val formType: 
 		"Brush your teeth at least twice today.",
 		FormType.POSITIVE_INTEGER,
 		"times",
-		{ it.value >= 2 }
+		{ if (it.value >= 2) TaskStatus.COMPLETE else if (it.value == 1) TaskStatus.IN_PROGRESS_OR_ATTEMPTED else TaskStatus.INCOMPLETE }
 	),
 	PRACTICE(
 		"Practice Piano",
 		"Spend at least 30 minutes practicing the piano. If possible, also practice cello.",
 		FormType.POSITIVE_INTEGER,
 		"minutes",
-		{ it.value >= 30 }
+		{ if (it.value >= 60) TaskStatus.BEYOND_COMPLETE else if (it.value >= 30) TaskStatus.COMPLETE else if (it.value > 0) TaskStatus.IN_PROGRESS_OR_ATTEMPTED else TaskStatus.INCOMPLETE }
 	),
-	EAT_HEALTHY("Eat Healthy Meals", "Eat healthy meals.", FormType.POSITIVE_INTEGER, "meals"),
-	EAT_MISCELLANEOUS("Eat Meals", "Eat meals.", FormType.POSITIVE_INTEGER, "meals", { null }),
+	EAT_HEALTHY("Eat Healthy Meals", "Eat healthy meals.", FormType.POSITIVE_INTEGER, "meals", { if (it.value >= 2) TaskStatus.BEYOND_COMPLETE else if (it.value == 1) TaskStatus.COMPLETE else TaskStatus.INCOMPLETE }),
+	EAT_MISCELLANEOUS("Eat Meals", "Eat meals.", FormType.POSITIVE_INTEGER, "meals", { TaskStatus.COMPLETION_IRRELEVANT }),
 	EAT(
 		"Eat",
 		"Eat at least two meals today. At least one of those meals needs to be healthy.",
 		FormType.NONE,
 		"",
-		{ it.subTaskValues[0].value > 0 && it.subTaskValues[0].value + it.subTaskValues[1].value >= 2 },
+		{
+			val healthyMeals = it.subTaskValues[0].value
+			val totalMeals = it.subTaskValues[0].value + it.subTaskValues[1].value
+			if (healthyMeals >= 2)
+				TaskStatus.BEYOND_COMPLETE
+			else if (healthyMeals == 1 && totalMeals >= 2)
+				TaskStatus.COMPLETE
+			else if (totalMeals > 0)
+				TaskStatus.IN_PROGRESS_OR_ATTEMPTED
+			else
+				TaskStatus.INCOMPLETE
+		},
 		arrayOf(EAT_HEALTHY, EAT_MISCELLANEOUS)
 	),
 	EXERCISE(
@@ -63,7 +73,7 @@ enum class Task(val displayName: String, val description: String, val formType: 
 		"Exercise for at least 30 minutes.",
 		FormType.POSITIVE_INTEGER,
 		"minutes",
-		{ it.value >= 30 }
+		{ if (it.value >= 60) TaskStatus.BEYOND_COMPLETE else if (it.value >= 30) TaskStatus.COMPLETE else if (it.value > 0) TaskStatus.IN_PROGRESS_OR_ATTEMPTED else TaskStatus.INCOMPLETE }
 	),
 	COMMIT(
 		"Commit Code",
@@ -77,14 +87,17 @@ enum class Task(val displayName: String, val description: String, val formType: 
 		"Solve a Problem",
 		"Solve any sort of problem. It could be homework, a personal problem, or anything else."
 	),
-	TALK_NEW("Meet Someone", "Meet and talk with someone you don't know.", FormType.CHECKBOX, "", { if (it.value > 0) true else null }),
-	TALK_QUESTION("Ask a Question", "Ask anyone any sort of question. It could be clarification, or asking for help, or anything else.", FormType.CHECKBOX, "", { if (it.value > 0) true else null }),
+	TALK_NEW("Meet Someone", "Meet and talk with someone you don't know.", FormType.CHECKBOX, "", { if (it.value > 0) TaskStatus.COMPLETE else TaskStatus.COMPLETION_IRRELEVANT }),
+	TALK_QUESTION("Ask a Question", "Ask anyone any sort of question. It could be clarification, or asking for help, or anything else.", FormType.CHECKBOX, "", { if (it.value > 0) TaskStatus.COMPLETE else TaskStatus.COMPLETION_IRRELEVANT }),
 	TALK(
 		"Talk",
 		"Either meet a new person or ask someone a legitimate question.",
 		FormType.NONE,
 		"",
-		{ it.subTaskValues.any { it.value > 0 } },
+		{
+			val subTaskValues = it.subTaskValues.sumBy { subTaskValue -> subTaskValue.value }
+			if (subTaskValues == 2) TaskStatus.BEYOND_COMPLETE else if (subTaskValues == 1) TaskStatus.COMPLETE else TaskStatus.INCOMPLETE
+		},
 		arrayOf(TALK_NEW, TALK_QUESTION)
 	),
 	JOURNAL(
@@ -93,9 +106,9 @@ enum class Task(val displayName: String, val description: String, val formType: 
 	),
 	PLANK(
 		"Plank",
-		"Plank with any plank form for at least 4 minutes (240 seconds).",
+		"Plank with any plank form for at least 3 minutes (180 seconds), but go for 4 minutes if possible (240 seconds).",
 		FormType.POSITIVE_INTEGER,
 		"seconds",
-		{ it.value >= 240 }
+		{ if (it.value >= 240) TaskStatus.BEYOND_COMPLETE else if (it.value >= 180) TaskStatus.COMPLETE else if (it.value > 0) TaskStatus.IN_PROGRESS_OR_ATTEMPTED else TaskStatus.INCOMPLETE }
 	)
 }

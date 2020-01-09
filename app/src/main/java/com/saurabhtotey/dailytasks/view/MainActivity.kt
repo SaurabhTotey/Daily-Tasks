@@ -17,6 +17,7 @@ import com.saurabhtotey.dailytasks.R
 import com.saurabhtotey.dailytasks.TaskDataController
 import com.saurabhtotey.dailytasks.model.FormType
 import com.saurabhtotey.dailytasks.model.Task
+import com.saurabhtotey.dailytasks.model.TaskStatus
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -132,6 +133,7 @@ class MainActivity : AppCompatActivity() {
 	 * Populates the given task view with data from the given task
 	 * Task depth is how nested the task is as a sub-task:
 	 *  0 means the task is a main task, 1 means the task is a sub-task, 2 means the task is a sub-sub-task, and so on
+	 * TODO: pull out all of this logic into a separate TaskView class that stores its constituent views
 	 */
 	private fun populateTaskView(taskView: View, task: Task, taskDepth: Int = 0) {
 		//Gives the task view its basic information
@@ -225,9 +227,11 @@ class MainActivity : AppCompatActivity() {
 			val completion = task.evaluateIsCompleted(TaskDataController.get(this).getValueFor(task, this.trackingDate))
 			view.background = this.resources.getDrawable(
 				when (completion) {
-					null -> R.color.taskCompletionIrrelevant
-					true -> R.color.taskComplete
-					false -> R.color.taskIncomplete
+					TaskStatus.BEYOND_COMPLETE -> R.color.taskBeyondComplete
+					TaskStatus.COMPLETE -> R.color.taskComplete
+					TaskStatus.IN_PROGRESS_OR_ATTEMPTED -> R.color.taskInProgressOrAttempted
+					TaskStatus.INCOMPLETE -> R.color.taskIncomplete
+					TaskStatus.COMPLETION_IRRELEVANT -> R.color.taskCompletionIrrelevant
 				},
 				this.theme
 			)

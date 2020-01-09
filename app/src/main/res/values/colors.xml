@@ -2,7 +2,9 @@
 <resources>
 	<color name="datePickerThemeColor">#808080</color>
 	<color name="colorAccent">#FFFFFF</color>
+	<color name="taskBeyondComplete">#5EA3CF</color>
 	<color name="taskComplete">#7BC17E</color>
+	<color name="taskInProgressOrAttempted">#F0EEA6</color>
 	<color name="taskIncomplete">#FF5C5C</color>
 	<color name="taskCompletionIrrelevant">#B1B9B6</color>
 </resources>
