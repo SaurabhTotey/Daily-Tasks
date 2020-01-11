@@ -103,12 +103,4 @@ class TaskDataController private constructor(context: Context) {
 		this.file.writeText(this.fileData.toString())
 	}
 
-	/**
-	 * Filters all the tasks and gets all non-sub-tasks
-	 */
-	fun getPrimaryTasks(): Array<Task> {
-		val subTasks = Task.values().flatMap { it.subTasks.toList() }
-		return Task.values().filter { !subTasks.contains(it) }.toTypedArray()
-	}
-
 }

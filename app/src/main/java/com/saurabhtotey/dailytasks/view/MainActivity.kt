@@ -18,6 +18,7 @@ import com.saurabhtotey.dailytasks.TaskDataController
 import com.saurabhtotey.dailytasks.model.FormType
 import com.saurabhtotey.dailytasks.model.Task
 import com.saurabhtotey.dailytasks.model.TaskStatus
+import com.saurabhtotey.dailytasks.model.primaryTasks
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -64,7 +65,7 @@ class MainActivity : AppCompatActivity() {
 
 		//Populates the view with tasks
 		this.tasksRoot = this.findViewById(R.id.TaskContainer)
-		TaskDataController.get(this).getPrimaryTasks().forEach { task ->
+		primaryTasks.forEach { task ->
 			val taskView = LayoutInflater.from(this).inflate(R.layout.task, this.tasksRoot!!, false)
 			this.tasksRoot!!.addView(taskView)
 			this.populateTaskView(taskView, task)

@@ -11,6 +11,7 @@ import androidx.core.app.NotificationCompat
 import com.saurabhtotey.dailytasks.R
 import com.saurabhtotey.dailytasks.TaskDataController
 import com.saurabhtotey.dailytasks.model.TaskStatus
+import com.saurabhtotey.dailytasks.model.primaryTasks
 import java.util.*
 
 /**
@@ -85,7 +86,7 @@ class NotificationSender: BroadcastReceiver() {
 		//Counts incomplete tasks and cancels existing notifications if there are no remaining tasks
 		val passingStates = arrayOf(TaskStatus.BEYOND_COMPLETE, TaskStatus.COMPLETE, TaskStatus.COMPLETION_IRRELEVANT)
 		val today = Calendar.getInstance()
-		val numberOfIncompleteTasks = TaskDataController.get(context).getPrimaryTasks().count { task ->
+		val numberOfIncompleteTasks = primaryTasks.count { task ->
 			!passingStates.contains(task.evaluateIsCompleted(TaskDataController.get(context).getValueFor(task, today)))
 		}
 		if (numberOfIncompleteTasks == 0) {
