@@ -27,7 +27,7 @@ enum class Task(val displayName: String, val description: String, val formType: 
 		"Meditate for at least 5 minutes.",
 		FormType.POSITIVE_INTEGER,
 		"minutes",
-		{ if (it.value >= 15) TaskStatus.BEYOND_COMPLETE else if (it.value >= 5) TaskStatus.COMPLETE else TaskStatus.INCOMPLETE }
+		generateCompletionFunctionBasedOnThresholds(15, 5, null, TaskStatus.INCOMPLETE)
 	),
 	SHOWER(
 		"Shower",
@@ -38,14 +38,14 @@ enum class Task(val displayName: String, val description: String, val formType: 
 		"Brush your teeth at least twice today.",
 		FormType.POSITIVE_INTEGER,
 		"times",
-		{ if (it.value >= 2) TaskStatus.COMPLETE else if (it.value == 1) TaskStatus.IN_PROGRESS_OR_ATTEMPTED else TaskStatus.INCOMPLETE }
+		generateCompletionFunctionBasedOnThresholds(null, 2, 1, TaskStatus.INCOMPLETE)
 	),
 	PRACTICE(
 		"Practice Piano",
 		"Spend at least 30 minutes practicing the piano. If possible, also practice cello.",
 		FormType.POSITIVE_INTEGER,
 		"minutes",
-		{ if (it.value >= 60) TaskStatus.BEYOND_COMPLETE else if (it.value >= 30) TaskStatus.COMPLETE else if (it.value > 0) TaskStatus.IN_PROGRESS_OR_ATTEMPTED else TaskStatus.INCOMPLETE }
+		generateCompletionFunctionBasedOnThresholds(60, 30, 1, TaskStatus.INCOMPLETE)
 	),
 	EAT_HEALTHY("Eat Healthy Meals", "Eat healthy meals.", FormType.POSITIVE_INTEGER, "meals", { if (it.value >= 2) TaskStatus.BEYOND_COMPLETE else if (it.value == 1) TaskStatus.COMPLETE else TaskStatus.INCOMPLETE }),
 	EAT_MISCELLANEOUS("Eat Meals", "Eat meals.", FormType.POSITIVE_INTEGER, "meals", { TaskStatus.COMPLETION_IRRELEVANT }),
@@ -73,7 +73,7 @@ enum class Task(val displayName: String, val description: String, val formType: 
 		"Exercise for at least 30 minutes.",
 		FormType.POSITIVE_INTEGER,
 		"minutes",
-		{ if (it.value >= 60) TaskStatus.BEYOND_COMPLETE else if (it.value >= 30) TaskStatus.COMPLETE else if (it.value > 0) TaskStatus.IN_PROGRESS_OR_ATTEMPTED else TaskStatus.INCOMPLETE }
+		generateCompletionFunctionBasedOnThresholds(60, 30, 1, TaskStatus.INCOMPLETE)
 	),
 	COMMIT(
 		"Commit Code",
@@ -109,6 +109,6 @@ enum class Task(val displayName: String, val description: String, val formType: 
 		"Plank with any plank form for at least 3 minutes (180 seconds), but go for 4 minutes if possible (240 seconds).",
 		FormType.POSITIVE_INTEGER,
 		"seconds",
-		{ if (it.value >= 240) TaskStatus.BEYOND_COMPLETE else if (it.value >= 180) TaskStatus.COMPLETE else if (it.value > 0) TaskStatus.IN_PROGRESS_OR_ATTEMPTED else TaskStatus.INCOMPLETE }
+		generateCompletionFunctionBasedOnThresholds(240, 180, 1, TaskStatus.INCOMPLETE)
 	)
 }
