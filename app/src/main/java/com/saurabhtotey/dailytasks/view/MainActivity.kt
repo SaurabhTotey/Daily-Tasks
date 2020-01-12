@@ -134,7 +134,6 @@ class MainActivity : AppCompatActivity() {
 	 * Populates the given task view with data from the given task
 	 * Task depth is how nested the task is as a sub-task:
 	 *  0 means the task is a main task, 1 means the task is a sub-task, 2 means the task is a sub-sub-task, and so on
-	 * TODO: pull out all of this logic into a separate TaskView class that stores its constituent views
 	 */
 	private fun populateTaskView(taskView: View, task: Task, taskDepth: Int = 0) {
 		//Gives the task view its basic information

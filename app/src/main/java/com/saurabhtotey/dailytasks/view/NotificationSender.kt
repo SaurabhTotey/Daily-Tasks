@@ -16,6 +16,7 @@ import java.util.*
 
 /**
  * Schedules a notification for the next hour
+ * TODO: make notifications happen less often
  */
 fun scheduleNotification(context: Context) {
 	val alarmStartTime = Calendar.getInstance().also {
@@ -24,7 +25,7 @@ fun scheduleNotification(context: Context) {
 		it.set(Calendar.MILLISECOND, 0)
 		it.add(Calendar.HOUR, 1)
 	}
-	(context.getSystemService(Context.ALARM_SERVICE) as AlarmManager).setExactAndAllowWhileIdle(
+	(context.getSystemService(Context.ALARM_SERVICE) as AlarmManager).setAndAllowWhileIdle(
 		AlarmManager.RTC_WAKEUP,
 		alarmStartTime.timeInMillis,
 		PendingIntent.getBroadcast(
@@ -39,6 +40,7 @@ fun scheduleNotification(context: Context) {
 /**
  * The broadcast receiver that manages sending notifications
  * Ensures that another notification is scheduled after a notification is sent (so that they are recurring)
+ * TODO: enable this on boot
  */
 class NotificationSender: BroadcastReceiver() {
 
