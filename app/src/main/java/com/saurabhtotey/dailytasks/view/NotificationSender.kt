@@ -85,9 +85,9 @@ class NotificationSender: BroadcastReceiver() {
 
 		//Counts incomplete tasks and cancels existing notifications if there are no remaining tasks
 		val passingStates = arrayOf(TaskStatus.BEYOND_COMPLETE, TaskStatus.COMPLETE, TaskStatus.COMPLETION_IRRELEVANT)
-		val today = Calendar.getInstance()
+		val taskDataController = TaskDataController(context)
 		val numberOfIncompleteTasks = primaryTasks.count { task ->
-			!passingStates.contains(task.evaluateIsCompleted(TaskDataController.get(context).getValueFor(task, today)))
+			!passingStates.contains(task.evaluateIsCompleted(taskDataController.getValueFor(task)))
 		}
 		if (numberOfIncompleteTasks == 0) {
 			notificationManager.cancel(0)

@@ -2,6 +2,7 @@ package com.saurabhtotey.dailytasks.view
 
 import android.app.DatePickerDialog
 import android.content.Context
+import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
 import android.text.Editable
@@ -31,19 +32,13 @@ import java.util.*
  * Tasks have a green background when considered complete, red for incomplete, and white for when completion is meaningless in the context of the task
  * Handles the expanding/collapsing of task descriptions when tasks get selected
  * TODO: may eventually allow for navigation to another view that shows stats and data
+ * TODO: update doc above
  */
 class MainActivity : AppCompatActivity() {
 
 	private var taskViews = listOf<TaskView>()
 
 	private var dateButton: Button? = null
-	private var trackingDate = Calendar.getInstance()
-		set(value) {
-			field = value
-			this.dateButton!!.text = SimpleDateFormat.getDateInstance().format(value.time)
-			this.updateTaskViewsForms()
-			this.updateTaskViewsByCompletion()
-		}
 
 	private var expandSubTasksButton: ImageButton? = null
 	private var numberOfExpandedDescriptions = 0
@@ -63,18 +58,12 @@ class MainActivity : AppCompatActivity() {
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.activity_main)
 
-		fun makeValueChangeCallback(task: Task): (Int) -> Unit {
-			return {
-				TaskDataController.get(this).setValueForTask(task, it, this.trackingDate)
-				this.updateTaskViewsByCompletion()
-			}
-		}
 		this.taskViews = primaryTasks.flatMap {
 			TaskView(
 				it,
 				0,
 				this.findViewById(R.id.TaskContainer),
-				makeValueChangeCallback(it),
+				{},
 				{ isExpanded -> this.numberOfExpandedDescriptions += if (isExpanded) 1 else -1 },
 				{ isExpanded -> this.numberOfExpandedSubTasks += if (isExpanded) 1 else -1 },
 				this
@@ -94,7 +83,8 @@ class MainActivity : AppCompatActivity() {
 
 		//Sets up functionality for the dateButton
 		this.dateButton = this.findViewById(R.id.DateButton)
-		this.trackingDate = Calendar.getInstance()
+		TaskDataController.get(this).trackingDate = (this.intent.getSerializableExtra("date") as Calendar?) ?: Calendar.getInstance()
+		this.dateButton!!.text = SimpleDateFormat.getDateInstance().format(TaskDataController.get(this).trackingDate.time)
 		this.dateButton!!.setOnClickListener {
 			DatePickerDialog(
 				this,
@@ -106,52 +96,15 @@ class MainActivity : AppCompatActivity() {
 					if (newDate > Calendar.getInstance()) {
 						newDate = Calendar.getInstance() //Do not allow editing for the future
 					}
-					this.trackingDate = newDate
+					val newIntent = this.intent
+					newIntent.putExtra("date", newDate)
+					this.startActivity(newIntent)
+					this.finish()
 				},
-				this.trackingDate.get(Calendar.YEAR),
-				this.trackingDate.get(Calendar.MONTH),
-				this.trackingDate.get(Calendar.DATE)
+				TaskDataController.get(this).trackingDate.get(Calendar.YEAR),
+				TaskDataController.get(this).trackingDate.get(Calendar.MONTH),
+				TaskDataController.get(this).trackingDate.get(Calendar.DATE)
 			).show()
-		}
-	}
-
-	/**
-	 * Updates the appearance for all taskViews based off of their completion
-	 * TODO: make TaskView handle this
-	 */
-	private fun updateTaskViewsByCompletion() {
-		this.taskViews.forEach {
-			val completion = it.task.evaluateIsCompleted(TaskDataController.get(this).getValueFor(it.task, this.trackingDate))
-			it.taskView.background = this.resources.getDrawable(
-				when (completion) {
-					TaskStatus.BEYOND_COMPLETE -> R.color.taskBeyondComplete
-					TaskStatus.COMPLETE -> R.color.taskComplete
-					TaskStatus.IN_PROGRESS_OR_ATTEMPTED -> R.color.taskInProgressOrAttempted
-					TaskStatus.INCOMPLETE -> R.color.taskIncomplete
-					TaskStatus.COMPLETION_IRRELEVANT -> R.color.taskCompletionIrrelevant
-				},
-				this.theme
-			)
-		}
-	}
-
-	/**
-	 * Updates the forms for all taskViews
-	 * TODO: make this better
-	 */
-	private fun updateTaskViewsForms() {
-		this.taskViews.forEach {
-			if (it.task.formType == FormType.CHECKBOX) {
-				val newValue = TaskDataController.get(this).getValueFor(it.task, this.trackingDate).value > 0
-				if (it.checkBox!!.isChecked != newValue) {
-					it.checkBox!!.isChecked = newValue
-				}
-			} else if (it.task.formType == FormType.POSITIVE_INTEGER) {
-				val newValue = "${TaskDataController.get(this).getValueFor(it.task, this.trackingDate).value}"
-				if (it.numberInput!!.text.toString() != newValue) {
-					it.numberInput!!.setText(newValue)
-				}
-			}
 		}
 	}
 
