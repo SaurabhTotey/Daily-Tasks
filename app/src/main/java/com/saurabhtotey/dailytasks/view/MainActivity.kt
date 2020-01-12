@@ -34,7 +34,7 @@ import java.util.*
  */
 class MainActivity : AppCompatActivity() {
 
-	private var tasksRoot: LinearLayout? = null
+	private var taskViews = listOf<TaskView>()
 
 	private var dateButton: Button? = null
 	private var trackingDate = Calendar.getInstance()
@@ -63,48 +63,33 @@ class MainActivity : AppCompatActivity() {
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.activity_main)
 
-		//Populates the view with tasks
-		this.tasksRoot = this.findViewById(R.id.TaskContainer)
-		primaryTasks.forEach { task ->
-			val taskView = LayoutInflater.from(this).inflate(R.layout.task, this.tasksRoot!!, false)
-			this.tasksRoot!!.addView(taskView)
-			this.populateTaskView(taskView, task)
+		fun makeValueChangeCallback(task: Task): (Int) -> Unit {
+			return {
+				TaskDataController.get(this).setValueForTask(task, it, this.trackingDate)
+				this.updateTaskViewsByCompletion()
+			}
+		}
+		this.taskViews = primaryTasks.flatMap {
+			TaskView(
+				it,
+				0,
+				this.findViewById(R.id.TaskContainer),
+				makeValueChangeCallback(it),
+				{ isExpanded -> this.numberOfExpandedDescriptions += if (isExpanded) 1 else -1 },
+				{ isExpanded -> this.numberOfExpandedSubTasks += if (isExpanded) 1 else -1 },
+				this
+			).taskViews.toList()
 		}
 
 		//Sets up the expand/collapse all descriptions and expand/collapse all sub-tasks buttons
 		this.expandSubTasksButton = this.findViewById(R.id.ExpandAllSubTasksButton)
 		this.expandSubTasksButton!!.setOnClickListener {
-			if (this.numberOfExpandedSubTasks == 0) {
-				Task.values().forEach { task ->
-					val view = this.tasksRoot!!.findViewWithTag<RelativeLayout>(task.name)
-					val expandCollapseButton = view.findViewById<ImageButton>(R.id.ExpandSubTasksButton)
-					if (expandCollapseButton.visibility == View.VISIBLE) {
-						view.findViewById<LinearLayout>(R.id.SubTaskContainer).visibility = View.VISIBLE
-						expandCollapseButton.setImageDrawable(this.resources.getDrawable(android.R.drawable.arrow_up_float, this.theme))
-						this.numberOfExpandedSubTasks += 1
-					}
-				}
-			} else {
-				Task.values().forEach { task ->
-					val view = this.tasksRoot!!.findViewWithTag<RelativeLayout>(task.name)
-					view.findViewById<LinearLayout>(R.id.SubTaskContainer).visibility = View.GONE
-					view.findViewById<ImageButton>(R.id.ExpandSubTasksButton).setImageDrawable(this.resources.getDrawable(android.R.drawable.arrow_down_float, this.theme))
-				}
-				this.numberOfExpandedSubTasks = 0
-			}
+			val shouldExpand = this.numberOfExpandedSubTasks == 0
+			this.taskViews.forEach { it.isSubTaskContainerExpanded = shouldExpand }
 		}
 		this.findViewById<Button>(R.id.ExpandAllDescriptionsButton).setOnClickListener {
-			if (this.numberOfExpandedDescriptions == 0) {
-				Task.values().forEach { task ->
-					this.tasksRoot!!.findViewWithTag<RelativeLayout>(task.name).findViewById<TextView>(R.id.TaskDescription).visibility = View.VISIBLE
-				}
-				this.numberOfExpandedDescriptions = Task.values().size
-			} else {
-				Task.values().forEach { task ->
-					this.tasksRoot!!.findViewWithTag<RelativeLayout>(task.name).findViewById<TextView>(R.id.TaskDescription).visibility = View.GONE
-				}
-				this.numberOfExpandedDescriptions = 0
-			}
+			val shouldExpand = this.numberOfExpandedDescriptions == 0
+			this.taskViews.forEach { it.isDescriptionExpanded = shouldExpand }
 		}
 
 		//Sets up functionality for the dateButton
@@ -131,102 +116,13 @@ class MainActivity : AppCompatActivity() {
 	}
 
 	/**
-	 * Populates the given task view with data from the given task
-	 * Task depth is how nested the task is as a sub-task:
-	 *  0 means the task is a main task, 1 means the task is a sub-task, 2 means the task is a sub-sub-task, and so on
-	 * TODO: pull out all of this logic into a separate TaskView class that stores its constituent views
-	 */
-	private fun populateTaskView(taskView: View, task: Task, taskDepth: Int = 0) {
-		//Gives the task view its basic information
-		taskView.tag = task.name
-		val taskTitleView = taskView.findViewById<TextView>(R.id.TaskTitle)
-		val taskDescriptionView = taskView.findViewById<TextView>(R.id.TaskDescription)
-		taskTitleView.text = task.displayName
-		taskDescriptionView.text = task.description
-		taskView.findViewById<TextView>(R.id.TaskFormDescription).text = task.formDescription
-
-		//Shortens sub task title width so that form controls line up
-		taskTitleView.layoutParams.width -= taskDepth * (taskView.parent as LinearLayout).paddingStart
-
-		//Implements that when tasks are clicked, they toggle the visibility of their descriptions
-		taskView.setOnClickListener {
-			taskDescriptionView.visibility = if (taskDescriptionView.visibility == View.VISIBLE) {
-				this.numberOfExpandedDescriptions -= 1
-				View.GONE
-			} else {
-				this.numberOfExpandedDescriptions += 1
-				View.VISIBLE
-			}
-		}
-
-		//Creates task form controls and links it up with the TaskDataController to keep data up to date
-		if (task.formType == FormType.CHECKBOX) {
-			val checkBox = taskView.findViewById<CheckBox>(R.id.TaskCheckBox)
-			checkBox.visibility = View.VISIBLE
-			checkBox.setOnCheckedChangeListener { _, isChecked ->
-				TaskDataController.get(this).setValueForTask(task, if (isChecked) 1 else 0, this.trackingDate)
-				this.updateTaskViewsByCompletion()
-			}
-		} else if (task.formType == FormType.POSITIVE_INTEGER) {
-			val numberInput = taskView.findViewById<EditText>(R.id.TaskNumberInput)
-			numberInput.visibility = View.VISIBLE
-			numberInput.addTextChangedListener(object : TextWatcher {
-				override fun afterTextChanged(p0: Editable?) {
-					val numberInputValue = numberInput.text.toString().toIntOrNull() ?: return
-					TaskDataController.get(this@MainActivity).setValueForTask(task, numberInputValue, this@MainActivity.trackingDate)
-					this@MainActivity.updateTaskViewsByCompletion()
-				}
-				override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
-				override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
-			})
-			numberInput.setOnEditorActionListener { _, actionId, _ ->
-				if (actionId == EditorInfo.IME_ACTION_DONE) {
-					numberInput.clearFocus()
-				}
-				return@setOnEditorActionListener false
-			}
-			numberInput.setOnFocusChangeListener { _, hasFocus ->
-				if (!hasFocus && numberInput.text.isBlank()) {
-					numberInput.setText("0")
-				}
-			}
-			//TODO: unfocus when keyboard is dismissed: this is difficult and is probably going to need https://stackoverflow.com/questions/3425932/detecting-when-user-has-dismissed-the-soft-keyboard
-		}
-
-		//Populates the subTaskContainer with the task's sub-tasks
-		val subTaskContainer = taskView.findViewById<LinearLayout>(R.id.SubTaskContainer)
-		task.subTasks.forEach { subTask ->
-			val subTaskView = LayoutInflater.from(this).inflate(R.layout.task, subTaskContainer, false)
-			subTaskContainer.addView(subTaskView)
-			this.populateTaskView(subTaskView, subTask, taskDepth + 1)
-		}
-
-		//Adds a button to expand and collapse the subTaskContainer if the task has sub-tasks
-		if (task.subTasks.isNotEmpty()) {
-			val subTaskExpansionButton = taskView.findViewById<ImageButton>(R.id.ExpandSubTasksButton)
-			subTaskExpansionButton.visibility = View.VISIBLE
-			subTaskExpansionButton.setOnClickListener {
-				if (subTaskContainer.visibility == View.VISIBLE) {
-					subTaskContainer.visibility = View.GONE
-					subTaskExpansionButton.setImageDrawable(this.resources.getDrawable(android.R.drawable.arrow_down_float, this.theme))
-					this.numberOfExpandedSubTasks -= 1
-				} else {
-					subTaskContainer.visibility = View.VISIBLE
-					subTaskExpansionButton.setImageDrawable(this.resources.getDrawable(android.R.drawable.arrow_up_float, this.theme))
-					this.numberOfExpandedSubTasks += 1
-				}
-			}
-		}
-	}
-
-	/**
 	 * Updates the appearance for all taskViews based off of their completion
+	 * TODO: make TaskView handle this
 	 */
 	private fun updateTaskViewsByCompletion() {
-		Task.values().forEach { task ->
-			val view = this.tasksRoot!!.findViewWithTag<RelativeLayout>(task.name)
-			val completion = task.evaluateIsCompleted(TaskDataController.get(this).getValueFor(task, this.trackingDate))
-			view.background = this.resources.getDrawable(
+		this.taskViews.forEach {
+			val completion = it.task.evaluateIsCompleted(TaskDataController.get(this).getValueFor(it.task, this.trackingDate))
+			it.taskView.background = this.resources.getDrawable(
 				when (completion) {
 					TaskStatus.BEYOND_COMPLETE -> R.color.taskBeyondComplete
 					TaskStatus.COMPLETE -> R.color.taskComplete
@@ -241,21 +137,19 @@ class MainActivity : AppCompatActivity() {
 
 	/**
 	 * Updates the forms for all taskViews
+	 * TODO: make this better
 	 */
 	private fun updateTaskViewsForms() {
-		Task.values().forEach { task ->
-			val view = this.tasksRoot!!.findViewWithTag<RelativeLayout>(task.name)
-			if (task.formType == FormType.CHECKBOX) {
-				val checkBox = view.findViewById<CheckBox>(R.id.TaskCheckBox)
-				val newValue = TaskDataController.get(this).getValueFor(task, this.trackingDate).value > 0
-				if (checkBox.isChecked != newValue) {
-					checkBox.isChecked = newValue
+		this.taskViews.forEach {
+			if (it.task.formType == FormType.CHECKBOX) {
+				val newValue = TaskDataController.get(this).getValueFor(it.task, this.trackingDate).value > 0
+				if (it.checkBox!!.isChecked != newValue) {
+					it.checkBox!!.isChecked = newValue
 				}
-			} else if (task.formType == FormType.POSITIVE_INTEGER) {
-				val editText = view.findViewById<EditText>(R.id.TaskNumberInput)
-				val newValue = "${TaskDataController.get(this).getValueFor(task, this.trackingDate).value}"
-				if (editText.text.toString() != newValue) {
-					editText.setText("${TaskDataController.get(this).getValueFor(task, this.trackingDate).value}")
+			} else if (it.task.formType == FormType.POSITIVE_INTEGER) {
+				val newValue = "${TaskDataController.get(this).getValueFor(it.task, this.trackingDate).value}"
+				if (it.numberInput!!.text.toString() != newValue) {
+					it.numberInput!!.setText(newValue)
 				}
 			}
 		}

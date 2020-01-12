@@ -14,12 +14,12 @@ import com.saurabhtotey.dailytasks.model.Task
 /**
  * A class that represents a view for a task
  * Holds all relevant child views and sub-task TaskViews
- * Takes in what task the view is supposed to represent, its depth (0 means its a main task, 1 means sub-task, 2 means sub-sub-task, so on), its parent, and the context
+ * Takes in what task the view is supposed to represent, its depth (0 means its a main task, 1 means sub-task, 2 means sub-sub-task, so on), its parent view, callbacks, and the context
  * Constructing a TaskView will add it to its parent automatically thereby modifying it
  */
-class TaskView(val task: Task, taskDepth: Int, parent: LinearLayout, private var context: Context) {
+class TaskView(val task: Task, taskDepth: Int, parent: LinearLayout, valueChangeCallback: (Int) -> Unit, private val descriptionExpansionChangeCallback: (Boolean) -> Unit, private val subTaskExpansionChangeCallback: (Boolean) -> Unit, private var context: Context) {
 
-	private val taskView = LayoutInflater.from(this.context).inflate(R.layout.task, parent, false)
+	val taskView = LayoutInflater.from(this.context).inflate(R.layout.task, parent, false)!!
 	private val titleView: TextView
 	private val descriptionView: TextView
 	private val formDescriptionView: TextView
@@ -31,22 +31,36 @@ class TaskView(val task: Task, taskDepth: Int, parent: LinearLayout, private var
 	 * The view will only either have checkbox or numberInput or neither, but never both
 	 * Which is not null will reflect this.task.formType
 	 */
-	private var checkBox: CheckBox? = null
-	private var numberInput: EditText? = null
+	var checkBox: CheckBox? = null
+	var numberInput: EditText? = null
+
+	//Gets an array of TaskViews where the first entry is this TaskView and all subsequent entries are all nested sub-task TaskViews
+	val taskViews: Array<TaskView>
+		get() {
+			return arrayOf(this) + this.subTaskViews.flatMap { it.taskViews.toList() }
+		}
 
 	var isDescriptionExpanded = false
 		set(value) {
+			if (field == value) {
+				return
+			}
 			this.descriptionView.visibility = if (value) View.VISIBLE else View.GONE
 			field = value
+			this.descriptionExpansionChangeCallback(value)
 		}
 	var isSubTaskContainerExpanded = false
 		set(value) {
+			if (field == value) {
+				return
+			}
 			this.subTaskExpansionButton.setImageDrawable(this.context.resources.getDrawable(
 				if (value) android.R.drawable.arrow_up_float else android.R.drawable.arrow_down_float,
 				this.context.theme
 			))
 			this.subTaskContainer.visibility = if (value) View.VISIBLE else View.GONE
 			field = value
+			this.subTaskExpansionChangeCallback(value)
 		}
 
 	/**
@@ -76,18 +90,18 @@ class TaskView(val task: Task, taskDepth: Int, parent: LinearLayout, private var
 		//Toggles the description's visibility when the view is tapped on
 		this.taskView.setOnClickListener { this.isDescriptionExpanded = !this.isDescriptionExpanded }
 
-		//TODO:
+		//Links form controls to valueChangeCallback and sets up their behaviour
 		if (this.task.formType == FormType.CHECKBOX) {
 			this.checkBox = this.taskView.findViewById(R.id.TaskCheckBox)
 			this.checkBox!!.visibility = View.VISIBLE
-			this.checkBox!!.setOnCheckedChangeListener { _, isChecked -> /*TODO:*/ }
+			this.checkBox!!.setOnCheckedChangeListener { _, isChecked -> valueChangeCallback(if (isChecked) 1 else 0) }
 		} else if (this.task.formType == FormType.POSITIVE_INTEGER) {
 			this.numberInput = this.taskView.findViewById(R.id.TaskNumberInput)
 			this.numberInput!!.visibility = View.VISIBLE
 			this.numberInput!!.addTextChangedListener(object : TextWatcher {
 				override fun afterTextChanged(text: Editable?) {
 					val numberInputValue = text.toString().toIntOrNull() ?: return
-					/*TODO:*/
+					valueChangeCallback(numberInputValue)
 				}
 				override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
 				override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
@@ -107,7 +121,7 @@ class TaskView(val task: Task, taskDepth: Int, parent: LinearLayout, private var
 		}
 
 		//Makes TaskViews for the sub-tasks and makes the expansion button toggle sub-task visibility if there are sub-tasks
-		this.subTaskViews = this.task.subTasks.map { TaskView(it, taskDepth + 1, this.subTaskContainer, this.context) }.toTypedArray()
+		this.subTaskViews = this.task.subTasks.map { TaskView(it, taskDepth + 1, this.subTaskContainer, valueChangeCallback, descriptionExpansionChangeCallback, subTaskExpansionChangeCallback, this.context) }.toTypedArray()
 		if (this.task.subTasks.isNotEmpty()) {
 			this.subTaskExpansionButton.visibility = View.VISIBLE
 			this.subTaskExpansionButton.setOnClickListener { this.isSubTaskContainerExpanded = !this.isSubTaskContainerExpanded }
