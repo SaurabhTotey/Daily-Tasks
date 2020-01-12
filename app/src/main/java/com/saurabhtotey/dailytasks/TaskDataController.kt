@@ -13,9 +13,8 @@ import java.util.*
  * A singleton that acts as a controller if taken in an MVC context
  * Manages data flow and recording data to file and reading data from file
  * The context that is passed in is only used to initialize file IO: any correct context object should work
- * TODO: doc for singleton usage except for in NotificationSender
  */
-class TaskDataController constructor(context: Context) {
+class TaskDataController private constructor(context: Context) {
 
 	/**
 	 * Handles ensuring that this class is a singleton
@@ -30,31 +29,7 @@ class TaskDataController constructor(context: Context) {
 	}
 
 	private val file = File(context.filesDir, "TaskData.json")
-	private val fileData: JSONArray
-	private var trackingDateDataIndex = -1
-
-	var trackingDate = Calendar.getInstance()
-		set(value) {
-			field = value
-			val dateString = this.getDateString(value)
-			val indexOfCurrentDate = (0 until this.fileData.length()).firstOrNull { (this.fileData[it] as JSONObject).getString("date") == dateString }
-			if (indexOfCurrentDate != null) {
-				this.trackingDateDataIndex = indexOfCurrentDate
-				return
-			}
-			val currentDayTasksData = JSONObject()
-			currentDayTasksData.put("date", dateString)
-			currentDayTasksData.put("data", JSONObject())
-			(this.fileData.length() downTo 1).forEach { i -> this.fileData.put(i, this.fileData.get(i - 1)) }
-			this.fileData.put(0, currentDayTasksData)
-			(this.fileData.length() - 1 downTo 1).forEach { i ->
-				if (((this.fileData[i] as JSONObject)["data"] as JSONObject).length() == 0) {
-					this.fileData.remove(i)
-				}
-			}
-			this.file.writeText(this.fileData.toString())
-			this.trackingDateDataIndex = 0
-		}
+	private var fileData: JSONArray
 
 	/**
 	 * Parses the data file
@@ -66,16 +41,30 @@ class TaskDataController constructor(context: Context) {
 			this.file.writeText("[]")
 		}
 		this.fileData = JSONArray(this.file.readLines().joinToString("\n"))
-		this.trackingDate = Calendar.getInstance()
 	}
 
-	/**
-	 * Gets the task data (with date info stripped out) for the current trackingDate
-	 * Is given in key-value pairs where keys are task names and values are integers
-	 * Data is a copy and not a reference
-	 */
-	private fun getDayData(): JSONObject {
-		return (this.fileData[this.trackingDateDataIndex] as JSONObject)["data"] as JSONObject
+	private fun getIndexForDayDataFor(date: Calendar): Int {
+		val currentDate = this.getDateString(date)
+		val indexOfCurrentDate = (0 until this.fileData.length()).firstOrNull { (this.fileData[it] as JSONObject).getString("date") == currentDate }
+		if (indexOfCurrentDate != null) {
+			return indexOfCurrentDate
+		}
+		val currentDayTasksData = JSONObject()
+		currentDayTasksData.put("date", currentDate)
+		currentDayTasksData.put("data", JSONObject())
+		(this.fileData.length() downTo 1).forEach { i -> this.fileData.put(i, this.fileData.get(i - 1)) }
+		this.fileData.put(0, currentDayTasksData)
+		(this.fileData.length() - 1 downTo 1).forEach { i ->
+			if (((this.fileData[i] as JSONObject)["data"] as JSONObject).length() == 0) {
+				this.fileData.remove(i)
+			}
+		}
+		this.file.writeText(this.fileData.toString())
+		return 0
+	}
+
+	private fun getDayDataFor(date: Calendar): JSONObject {
+		return (this.fileData[this.getIndexForDayDataFor(date)] as JSONObject)["data"] as JSONObject
 	}
 
 	/**
@@ -88,28 +77,29 @@ class TaskDataController constructor(context: Context) {
 	/**
 	 * Gets the stored value for the given task: defaults to 0
 	 */
-	fun getValueFor(task: Task): TaskValue {
+	fun getValueFor(task: Task, date: Calendar): TaskValue {
 		var value = 0
-		if (this.getDayData().keys().asSequence().contains(task.name)) {
-			value = this.getDayData().getInt(task.name)
+		if (this.getDayDataFor(date).keys().asSequence().contains(task.name)) {
+			value = this.getDayDataFor(date).getInt(task.name)
 		}
-		return TaskValue(value, task.subTasks.map { getValueFor(it) })
+		return TaskValue(value, task.subTasks.map { getValueFor(it, date) })
 	}
 
 	/**
 	 * Updates the given task to have the given value
 	 * If a value is set to 0, the task is just removed from the data as an omission defaults to 0
 	 */
-	fun setValueForTask(task: Task, value: Int) {
-		val updatedData = this.getDayData()
+	fun setValueForTask(task: Task, value: Int, date: Calendar) {
+		val updatedData = this.getDayDataFor(date)
 		if (value == 0) {
 			updatedData.remove(task.name)
 		} else {
 			updatedData.put(task.name, value)
 		}
-		val updatedDayObject = this.fileData[this.trackingDateDataIndex] as JSONObject
-		updatedDayObject.put("data", updatedData)
-		this.fileData.put(this.trackingDateDataIndex, updatedDayObject)
+		val fullDayObjectIndex = this.getIndexForDayDataFor(date)
+		val fullDayObject = this.fileData[fullDayObjectIndex] as JSONObject
+		fullDayObject.put("data", updatedData)
+		this.fileData.put(fullDayObjectIndex, fullDayObject)
 		this.file.writeText(this.fileData.toString())
 	}
 
