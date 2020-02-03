@@ -12,59 +12,47 @@ import java.util.*
 /**
  * A singleton that acts as a controller if taken in an MVC context
  * Manages data flow and recording data to file and reading data from file
- * The context that is passed in is only used to initialize file IO: any correct context object should work
+ * Needs to have initialize called before it can be used
  */
-class TaskDataController private constructor(context: Context) {
+object TaskDataController {
 
-	/**
-	 * Handles ensuring that this class is a singleton
-	 */
-	companion object {
-		@Volatile private var INSTANCE: TaskDataController? = null
-		fun get(context: Context): TaskDataController {
-			return INSTANCE ?: synchronized(this) {
-				INSTANCE ?: TaskDataController(context).also { INSTANCE = it }
-			}
+	private var file: File? = null
+	private var fileData: JSONArray? = null
+
+	fun initialize(context: Context) {
+		if (this.file != null) {
+			return
 		}
-	}
-
-	private val file = File(context.filesDir, "TaskData.json")
-	private var fileData: JSONArray
-
-	/**
-	 * Parses the data file
-	 * Creates data file if it doesn't exist
-	 */
-	init {
-		if (!this.file.exists()) {
-			this.file.createNewFile()
-			this.file.writeText("[]")
+		this.file = File(context.filesDir, "TaskData.json")
+		if (!this.file!!.exists()) {
+			this.file!!.createNewFile()
+			this.file!!.writeText("[]")
 		}
-		this.fileData = JSONArray(this.file.readLines().joinToString("\n"))
+		this.fileData = JSONArray(this.file!!.readLines().joinToString("\n"))
 	}
 
 	private fun getIndexForDayDataFor(date: Calendar): Int {
 		val currentDate = this.getDateString(date)
-		val indexOfCurrentDate = (0 until this.fileData.length()).firstOrNull { (this.fileData[it] as JSONObject).getString("date") == currentDate }
+		val indexOfCurrentDate = (0 until this.fileData!!.length()).firstOrNull { (this.fileData!![it] as JSONObject).getString("date") == currentDate }
 		if (indexOfCurrentDate != null) {
 			return indexOfCurrentDate
 		}
 		val currentDayTasksData = JSONObject()
 		currentDayTasksData.put("date", currentDate)
 		currentDayTasksData.put("data", JSONObject())
-		(this.fileData.length() downTo 1).forEach { i -> this.fileData.put(i, this.fileData.get(i - 1)) }
-		this.fileData.put(0, currentDayTasksData)
-		(this.fileData.length() - 1 downTo 1).forEach { i ->
-			if (((this.fileData[i] as JSONObject)["data"] as JSONObject).length() == 0) {
-				this.fileData.remove(i)
+		(this.fileData!!.length() downTo 1).forEach { i -> this.fileData!!.put(i, this.fileData!!.get(i - 1)) }
+		this.fileData!!.put(0, currentDayTasksData)
+		(this.fileData!!.length() - 1 downTo 1).forEach { i ->
+			if (((this.fileData!![i] as JSONObject)["data"] as JSONObject).length() == 0) {
+				this.fileData!!.remove(i)
 			}
 		}
-		this.file.writeText(this.fileData.toString())
+		this.file!!.writeText(this.fileData.toString())
 		return 0
 	}
 
 	private fun getDayDataFor(date: Calendar): JSONObject {
-		return (this.fileData[this.getIndexForDayDataFor(date)] as JSONObject)["data"] as JSONObject
+		return (this.fileData!![this.getIndexForDayDataFor(date)] as JSONObject)["data"] as JSONObject
 	}
 
 	/**
@@ -97,10 +85,10 @@ class TaskDataController private constructor(context: Context) {
 			updatedData.put(task.name, value)
 		}
 		val fullDayObjectIndex = this.getIndexForDayDataFor(date)
-		val fullDayObject = this.fileData[fullDayObjectIndex] as JSONObject
+		val fullDayObject = this.fileData!![fullDayObjectIndex] as JSONObject
 		fullDayObject.put("data", updatedData)
-		this.fileData.put(fullDayObjectIndex, fullDayObject)
-		this.file.writeText(this.fileData.toString())
+		this.fileData!!.put(fullDayObjectIndex, fullDayObject)
+		this.file!!.writeText(this.fileData.toString())
 	}
 
 }

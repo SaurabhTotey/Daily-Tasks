@@ -85,11 +85,13 @@ class NotificationSender: BroadcastReceiver() {
 		//Schedules another notification for the next hour because notifications are recurring
 		scheduleNotification(context)
 
+		TaskDataController.initialize(context)
+
 		//Counts incomplete tasks and cancels existing notifications if there are no remaining tasks
 		val passingStates = arrayOf(TaskStatus.BEYOND_COMPLETE, TaskStatus.COMPLETE, TaskStatus.COMPLETION_IRRELEVANT)
 		val today = Calendar.getInstance()
 		val numberOfIncompleteTasks = primaryTasks.count { task ->
-			!passingStates.contains(task.evaluateIsCompleted(TaskDataController.get(context).getValueFor(task, today)))
+			!passingStates.contains(task.evaluateIsCompleted(TaskDataController.getValueFor(task, today)))
 		}
 		if (numberOfIncompleteTasks == 0) {
 			notificationManager.cancel(0)

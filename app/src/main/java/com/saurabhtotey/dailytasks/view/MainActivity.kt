@@ -63,6 +63,8 @@ class MainActivity : AppCompatActivity() {
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.activity_main)
 
+		TaskDataController.initialize(this)
+
 		//Populates the view with tasks
 		this.tasksRoot = this.findViewById(R.id.TaskContainer)
 		primaryTasks.forEach { task ->
@@ -163,7 +165,7 @@ class MainActivity : AppCompatActivity() {
 			val checkBox = taskView.findViewById<CheckBox>(R.id.TaskCheckBox)
 			checkBox.visibility = View.VISIBLE
 			checkBox.setOnCheckedChangeListener { _, isChecked ->
-				TaskDataController.get(this).setValueForTask(task, if (isChecked) 1 else 0, this.trackingDate)
+				TaskDataController.setValueForTask(task, if (isChecked) 1 else 0, this.trackingDate)
 				this.updateTaskViewsByCompletion()
 			}
 		} else if (task.formType == FormType.POSITIVE_INTEGER) {
@@ -172,7 +174,7 @@ class MainActivity : AppCompatActivity() {
 			numberInput.addTextChangedListener(object : TextWatcher {
 				override fun afterTextChanged(p0: Editable?) {
 					val numberInputValue = numberInput.text.toString().toIntOrNull() ?: return
-					TaskDataController.get(this@MainActivity).setValueForTask(task, numberInputValue, this@MainActivity.trackingDate)
+					TaskDataController.setValueForTask(task, numberInputValue, this@MainActivity.trackingDate)
 					this@MainActivity.updateTaskViewsByCompletion()
 				}
 				override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
@@ -224,7 +226,7 @@ class MainActivity : AppCompatActivity() {
 	private fun updateTaskViewsByCompletion() {
 		Task.values().forEach { task ->
 			val view = this.tasksRoot!!.findViewWithTag<RelativeLayout>(task.name)
-			val completion = task.evaluateIsCompleted(TaskDataController.get(this).getValueFor(task, this.trackingDate))
+			val completion = task.evaluateIsCompleted(TaskDataController.getValueFor(task, this.trackingDate))
 			view.background = this.resources.getDrawable(
 				when (completion) {
 					TaskStatus.BEYOND_COMPLETE -> R.color.taskBeyondComplete
@@ -246,15 +248,15 @@ class MainActivity : AppCompatActivity() {
 			val view = this.tasksRoot!!.findViewWithTag<RelativeLayout>(task.name)
 			if (task.formType == FormType.CHECKBOX) {
 				val checkBox = view.findViewById<CheckBox>(R.id.TaskCheckBox)
-				val newValue = TaskDataController.get(this).getValueFor(task, this.trackingDate).value > 0
+				val newValue = TaskDataController.getValueFor(task, this.trackingDate).value > 0
 				if (checkBox.isChecked != newValue) {
 					checkBox.isChecked = newValue
 				}
 			} else if (task.formType == FormType.POSITIVE_INTEGER) {
 				val editText = view.findViewById<EditText>(R.id.TaskNumberInput)
-				val newValue = "${TaskDataController.get(this).getValueFor(task, this.trackingDate).value}"
+				val newValue = "${TaskDataController.getValueFor(task, this.trackingDate).value}"
 				if (editText.text.toString() != newValue) {
-					editText.setText("${TaskDataController.get(this).getValueFor(task, this.trackingDate).value}")
+					editText.setText("${TaskDataController.getValueFor(task, this.trackingDate).value}")
 				}
 			}
 		}
