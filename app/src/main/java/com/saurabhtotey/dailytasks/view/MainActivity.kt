@@ -150,7 +150,7 @@ class MainActivity : AppCompatActivity() {
 		taskTitleView.layoutParams.width -= taskDepth * (taskView.parent as LinearLayout).paddingStart
 
 		//Implements that when tasks are clicked, they toggle the visibility of their descriptions
-		taskView.setOnClickListener {
+		taskTitleView.setOnClickListener {
 			taskDescriptionView.visibility = if (taskDescriptionView.visibility == View.VISIBLE) {
 				this.numberOfExpandedDescriptions -= 1
 				View.GONE
