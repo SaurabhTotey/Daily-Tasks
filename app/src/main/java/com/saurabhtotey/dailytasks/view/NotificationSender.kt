@@ -15,15 +15,14 @@ import com.saurabhtotey.dailytasks.model.primaryTasks
 import java.util.*
 
 /**
- * Schedules a notification for the next hour
- * TODO: make notifications happen less often
+ * Schedules a notification to happen 3 hours from now
  */
 fun scheduleNotification(context: Context) {
 	val alarmStartTime = Calendar.getInstance().also {
 		it.set(Calendar.MINUTE, 0)
 		it.set(Calendar.SECOND, 0)
 		it.set(Calendar.MILLISECOND, 0)
-		it.add(Calendar.HOUR, 1)
+		it.add(Calendar.HOUR, 3)
 	}
 	(context.getSystemService(Context.ALARM_SERVICE) as AlarmManager).setAndAllowWhileIdle(
 		AlarmManager.RTC_WAKEUP,
@@ -40,7 +39,6 @@ fun scheduleNotification(context: Context) {
 /**
  * The broadcast receiver that manages sending notifications
  * Ensures that another notification is scheduled after a notification is sent (so that they are recurring)
- * TODO: enable this on boot
  */
 class NotificationSender: BroadcastReceiver() {
 
@@ -51,6 +49,15 @@ class NotificationSender: BroadcastReceiver() {
 	 * and then schedules a notification for the next hour
 	 */
 	override fun onReceive(context: Context, intent: Intent?) {
+
+		//Schedules another notification for the next hour because notifications are recurring
+		scheduleNotification(context)
+
+		//Leaves if this is only being scheduled because of the phone booting up
+		if (intent?.action == Intent.ACTION_BOOT_COMPLETED) {
+			return
+		}
+
 		//Creates the notificationManager and the channel to send notifications on
 		val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 		notificationManager.createNotificationChannel(NotificationChannel(
@@ -81,9 +88,6 @@ class NotificationSender: BroadcastReceiver() {
 			.setOnlyAlertOnce(true)
 			.setContentIntent(appOpeningIntent)
 			.setAutoCancel(true)
-
-		//Schedules another notification for the next hour because notifications are recurring
-		scheduleNotification(context)
 
 		TaskDataController.initialize(context)
 
