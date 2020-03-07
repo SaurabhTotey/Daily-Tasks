@@ -9,48 +9,10 @@
 		TODO: add buttons to filter tasks and sort them based on completeness/alphabetically
 	-->
 
-	<RelativeLayout
-		android:id="@+id/ControlForm"
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-		android:layout_alignParentBottom="true">
-
-		<ImageButton
-			android:id="@+id/ExpandAllSubTasksButton"
-			android:layout_width="40dp"
-			android:layout_height="40dp"
-			android:contentDescription="@string/expand_all_sub_tasks_button_description"
-			android:src="@android:drawable/arrow_down_float"
-			android:background="@android:color/transparent" />
-
-		<TextView
-			android:id="@+id/DateDescription"
-			android:layout_width="wrap_content"
-			android:layout_height="40dp"
-			android:gravity="center_vertical"
-			android:text="@string/current_date"
-			android:textAppearance="@style/TextAppearance.AppCompat.Body2"
-			android:layout_toEndOf="@+id/ExpandAllSubTasksButton" />
-
-		<Button
-			android:id="@+id/DateButton"
-			android:layout_width="wrap_content"
-			android:layout_height="40dp"
-			android:layout_toEndOf="@+id/DateDescription" />
-
-		<Button
-			android:id="@+id/ExpandAllDescriptionsButton"
-			android:layout_width="wrap_content"
-			android:layout_height="40dp"
-			android:layout_alignParentEnd="true"
-			android:text="@string/expand_all_descriptions_button_text" />
-
-	</RelativeLayout>
-
 	<ScrollView
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
-		android:layout_above="@+id/ControlForm">
+		android:layout_alignParentStart="true">
 
 		<LinearLayout
 			android:id="@+id/TaskContainer"
@@ -59,5 +21,33 @@
 			android:orientation="vertical" />
 
 	</ScrollView>
+
+	<RelativeLayout
+		android:id="@+id/ControlForm"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignParentBottom="true"
+		android:layout_marginStart="20dp"
+		android:layout_marginBottom="20dp"
+		android:background="@color/colorAccent"
+		android:padding="5dp">
+
+		<TextView
+			android:id="@+id/DateDescription"
+			android:layout_width="wrap_content"
+			android:layout_height="40dp"
+			android:gravity="center_vertical"
+			android:text="@string/current_date"
+			android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+			android:layout_alignParentStart="true" />
+
+		<Button
+			android:id="@+id/DateButton"
+			android:layout_width="wrap_content"
+			android:layout_height="40dp"
+			android:layout_toEndOf="@+id/DateDescription" />
+
+
+	</RelativeLayout>
 
 </RelativeLayout>

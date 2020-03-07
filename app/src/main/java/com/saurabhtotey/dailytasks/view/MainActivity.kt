@@ -27,9 +27,7 @@ import java.util.*
  * In its most basic essence, shows a list of tasks
  *
  * Tasks are displayed as titles, descriptions, and a form field for marking some sort of completion info
- * Tasks also display with a button that expands and closes an indented list of sub-tasks that the parent task may consider when evaluating completion
- * Tasks have a green background when considered complete, red for incomplete, and white for when completion is meaningless in the context of the task
- * Handles the expanding/collapsing of task descriptions when tasks get selected
+ * Tasks have a different background color based on their completion status
  * TODO: may eventually allow for navigation to another view that shows stats and data
  */
 class MainActivity : AppCompatActivity() {
@@ -43,17 +41,6 @@ class MainActivity : AppCompatActivity() {
 			this.dateButton!!.text = SimpleDateFormat.getDateInstance().format(value.time)
 			this.updateTaskViewsForms()
 			this.updateTaskViewsByCompletion()
-		}
-
-	private var expandSubTasksButton: ImageButton? = null
-	private var numberOfExpandedDescriptions = 0
-	private var numberOfExpandedSubTasks = 0
-		set(value) {
-			field = value
-			this.expandSubTasksButton!!.setImageDrawable(this.resources.getDrawable(
-				if (value == 0) android.R.drawable.arrow_down_float else android.R.drawable.arrow_up_float,
-				this.theme
-			))
 		}
 
 	/**
@@ -71,42 +58,6 @@ class MainActivity : AppCompatActivity() {
 			val taskView = LayoutInflater.from(this).inflate(R.layout.task, this.tasksRoot!!, false)
 			this.tasksRoot!!.addView(taskView)
 			this.populateTaskView(taskView, task)
-		}
-
-		//Sets up the expand/collapse all descriptions and expand/collapse all sub-tasks buttons
-		this.expandSubTasksButton = this.findViewById(R.id.ExpandAllSubTasksButton)
-		this.expandSubTasksButton!!.setOnClickListener {
-			if (this.numberOfExpandedSubTasks == 0) {
-				Task.values().forEach { task ->
-					val view = this.tasksRoot!!.findViewWithTag<RelativeLayout>(task.name)
-					val expandCollapseButton = view.findViewById<ImageButton>(R.id.ExpandSubTasksButton)
-					if (expandCollapseButton.visibility == View.VISIBLE) {
-						view.findViewById<LinearLayout>(R.id.SubTaskContainer).visibility = View.VISIBLE
-						expandCollapseButton.setImageDrawable(this.resources.getDrawable(android.R.drawable.arrow_up_float, this.theme))
-						this.numberOfExpandedSubTasks += 1
-					}
-				}
-			} else {
-				Task.values().forEach { task ->
-					val view = this.tasksRoot!!.findViewWithTag<RelativeLayout>(task.name)
-					view.findViewById<LinearLayout>(R.id.SubTaskContainer).visibility = View.GONE
-					view.findViewById<ImageButton>(R.id.ExpandSubTasksButton).setImageDrawable(this.resources.getDrawable(android.R.drawable.arrow_down_float, this.theme))
-				}
-				this.numberOfExpandedSubTasks = 0
-			}
-		}
-		this.findViewById<Button>(R.id.ExpandAllDescriptionsButton).setOnClickListener {
-			if (this.numberOfExpandedDescriptions == 0) {
-				Task.values().forEach { task ->
-					this.tasksRoot!!.findViewWithTag<RelativeLayout>(task.name).findViewById<TextView>(R.id.TaskDescription).visibility = View.VISIBLE
-				}
-				this.numberOfExpandedDescriptions = Task.values().size
-			} else {
-				Task.values().forEach { task ->
-					this.tasksRoot!!.findViewWithTag<RelativeLayout>(task.name).findViewById<TextView>(R.id.TaskDescription).visibility = View.GONE
-				}
-				this.numberOfExpandedDescriptions = 0
-			}
 		}
 
 		//Sets up functionality for the dateButton
@@ -149,17 +100,6 @@ class MainActivity : AppCompatActivity() {
 		//Shortens sub task title width so that form controls line up
 		taskTitleView.layoutParams.width -= taskDepth * (taskView.parent as LinearLayout).paddingStart
 
-		//Implements that when tasks are clicked, they toggle the visibility of their descriptions
-		taskTitleView.setOnClickListener {
-			taskDescriptionView.visibility = if (taskDescriptionView.visibility == View.VISIBLE) {
-				this.numberOfExpandedDescriptions -= 1
-				View.GONE
-			} else {
-				this.numberOfExpandedDescriptions += 1
-				View.VISIBLE
-			}
-		}
-
 		//Creates task form controls and links it up with the TaskDataController to keep data up to date
 		if (task.formType == FormType.CHECKBOX) {
 			val checkBox = taskView.findViewById<CheckBox>(R.id.TaskCheckBox)
@@ -200,23 +140,6 @@ class MainActivity : AppCompatActivity() {
 			val subTaskView = LayoutInflater.from(this).inflate(R.layout.task, subTaskContainer, false)
 			subTaskContainer.addView(subTaskView)
 			this.populateTaskView(subTaskView, subTask, taskDepth + 1)
-		}
-
-		//Adds a button to expand and collapse the subTaskContainer if the task has sub-tasks
-		if (task.subTasks.isNotEmpty()) {
-			val subTaskExpansionButton = taskView.findViewById<ImageButton>(R.id.ExpandSubTasksButton)
-			subTaskExpansionButton.visibility = View.VISIBLE
-			subTaskExpansionButton.setOnClickListener {
-				if (subTaskContainer.visibility == View.VISIBLE) {
-					subTaskContainer.visibility = View.GONE
-					subTaskExpansionButton.setImageDrawable(this.resources.getDrawable(android.R.drawable.arrow_down_float, this.theme))
-					this.numberOfExpandedSubTasks -= 1
-				} else {
-					subTaskContainer.visibility = View.VISIBLE
-					subTaskExpansionButton.setImageDrawable(this.resources.getDrawable(android.R.drawable.arrow_up_float, this.theme))
-					this.numberOfExpandedSubTasks += 1
-				}
-			}
 		}
 	}
 
