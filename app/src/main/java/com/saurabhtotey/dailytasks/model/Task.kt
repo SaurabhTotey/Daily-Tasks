@@ -89,6 +89,7 @@ enum class Task(val displayName: String, val description: String, val formType: 
 	),
 	TALK_NEW("Meet Someone", "Meet and talk with someone you don't know.", FormType.CHECKBOX, "", { if (it.value > 0) TaskStatus.COMPLETE else TaskStatus.COMPLETION_IRRELEVANT }),
 	TALK_QUESTION("Ask a Question", "Ask anyone any sort of question. It could be clarification, or asking for help, or anything else.", FormType.CHECKBOX, "", { if (it.value > 0) TaskStatus.COMPLETE else TaskStatus.COMPLETION_IRRELEVANT }),
+	TALK_SHARE("Share", "Share a story or a joke or any other sort of information.", FormType.CHECKBOX, "", { if (it.value > 0) TaskStatus.COMPLETE else TaskStatus.COMPLETION_IRRELEVANT }),
 	TALK(
 		"Talk",
 		"Either meet a new person or ask someone a legitimate question.",
@@ -96,9 +97,9 @@ enum class Task(val displayName: String, val description: String, val formType: 
 		"",
 		{
 			val subTaskValues = it.subTaskValues.sumBy { subTaskValue -> subTaskValue.value }
-			if (subTaskValues == 2) TaskStatus.BEYOND_COMPLETE else if (subTaskValues == 1) TaskStatus.COMPLETE else TaskStatus.INCOMPLETE
+			if (subTaskValues >= 2) TaskStatus.BEYOND_COMPLETE else if (subTaskValues == 1) TaskStatus.COMPLETE else TaskStatus.INCOMPLETE
 		},
-		arrayOf(TALK_NEW, TALK_QUESTION)
+		arrayOf(TALK_NEW, TALK_QUESTION, TALK_SHARE)
 	),
 	JOURNAL(
 		"Write in Journal",
