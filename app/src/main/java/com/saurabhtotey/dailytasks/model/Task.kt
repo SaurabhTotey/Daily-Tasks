@@ -24,7 +24,7 @@ package com.saurabhtotey.dailytasks.model
 enum class Task(val displayName: String, val description: String, val formType: FormType = FormType.CHECKBOX, val formDescription: String = "", val evaluateIsCompleted: (TaskValue) -> TaskStatus = { if (it.value > 0) TaskStatus.COMPLETE else TaskStatus.INCOMPLETE }, val subTasks: Array<Task> = arrayOf()) {
 	MEDITATE(
 		"Meditate",
-		"Meditate for at least 5 minutes.",
+		"Meditate for at least 5 minutes. Do not do this at the expense of sleep.",
 		FormType.POSITIVE_INTEGER,
 		"minutes",
 		generateCompletionFunctionBasedOnThresholds(15, 5, null, TaskStatus.INCOMPLETE)
