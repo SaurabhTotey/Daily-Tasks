@@ -89,10 +89,10 @@ enum class Task(val displayName: String, val description: String, val formType: 
 	),
 	TALK_NEW("Meet Someone", "Meet and talk with someone you don't know.", FormType.CHECKBOX, "", { if (it.value > 0) TaskStatus.COMPLETE else TaskStatus.COMPLETION_IRRELEVANT }),
 	TALK_QUESTION("Ask a Question", "Ask anyone any sort of question. It could be clarification, or asking for help, or anything else.", FormType.CHECKBOX, "", { if (it.value > 0) TaskStatus.COMPLETE else TaskStatus.COMPLETION_IRRELEVANT }),
-	TALK_SHARE("Share", "Share a story or a joke or any other sort of information.", FormType.CHECKBOX, "", { if (it.value > 0) TaskStatus.COMPLETE else TaskStatus.COMPLETION_IRRELEVANT }),
+	TALK_SHARE("Share", "Share a story or a joke or any other sort of information about yourself.", FormType.CHECKBOX, "", { if (it.value > 0) TaskStatus.COMPLETE else TaskStatus.COMPLETION_IRRELEVANT }),
 	TALK(
 		"Talk",
-		"Either meet a new person or ask someone a legitimate question.",
+		"Either meet a new person, ask any sort of question, or share something about yourself.",
 		FormType.NONE,
 		"",
 		{
