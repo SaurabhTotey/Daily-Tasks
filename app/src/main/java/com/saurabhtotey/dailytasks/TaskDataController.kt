@@ -19,6 +19,9 @@ object TaskDataController {
 	private var file: File? = null
 	private var fileData: JSONArray? = null
 
+	val fileString: String
+		get() = this.file!!.readText()
+
 	fun initialize(context: Context) {
 		if (this.file != null) {
 			return

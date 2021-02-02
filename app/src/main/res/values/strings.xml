@@ -12,4 +12,5 @@
 		<item quantity="one">You have to complete %1$d more task today.</item>
 		<item quantity="other">You have to complete %1$d more tasks today.</item>
 	</plurals>
+	<string name="share">Share</string>
 </resources>

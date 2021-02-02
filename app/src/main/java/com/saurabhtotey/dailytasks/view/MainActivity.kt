@@ -2,6 +2,7 @@ package com.saurabhtotey.dailytasks.view
 
 import android.app.DatePickerDialog
 import android.content.Context
+import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
 import android.text.Editable
@@ -44,6 +45,8 @@ class MainActivity : AppCompatActivity() {
 			this.updateTaskViewsByCompletion()
 		}
 
+	private var shareButton: Button? = null
+
 	/**
 	 * Main entry point for the app
 	 */
@@ -81,6 +84,17 @@ class MainActivity : AppCompatActivity() {
 				this.trackingDate.get(Calendar.MONTH),
 				this.trackingDate.get(Calendar.DATE)
 			).show()
+		}
+
+		//Sets up functionality for the sharing button
+		this.shareButton = this.findViewById(R.id.ShareButton);
+		this.shareButton!!.setOnClickListener {
+			val sharingIntent = Intent().apply {
+				this.action = Intent.ACTION_SEND
+				this.type = "text/json"
+				this.putExtra(Intent.EXTRA_TEXT, TaskDataController.fileString)
+			}
+			this.startActivity(Intent.createChooser(sharingIntent, "Your Daily Task Data"))
 		}
 	}
 
