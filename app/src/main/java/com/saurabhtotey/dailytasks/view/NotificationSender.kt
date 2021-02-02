@@ -19,8 +19,7 @@ import java.util.*
  */
 fun scheduleNotification(context: Context) {
 	val alarmStartTime = Calendar.getInstance().also {
-		it.add(Calendar.HOUR, 2)
-		it.add(Calendar.MINUTE, 30)
+		it.add(Calendar.HOUR, 6)
 	}
 	(context.getSystemService(Context.ALARM_SERVICE) as AlarmManager).setAndAllowWhileIdle(
 		AlarmManager.RTC_WAKEUP,

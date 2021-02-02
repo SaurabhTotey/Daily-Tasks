@@ -13,6 +13,7 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.res.ResourcesCompat
 import com.saurabhtotey.dailytasks.R
 import com.saurabhtotey.dailytasks.TaskDataController
 import com.saurabhtotey.dailytasks.model.FormType
@@ -150,7 +151,8 @@ class MainActivity : AppCompatActivity() {
 		Task.values().forEach { task ->
 			val view = this.tasksRoot!!.findViewWithTag<RelativeLayout>(task.name)
 			val completion = task.evaluateIsCompleted(TaskDataController.getValueFor(task, this.trackingDate))
-			view.background = this.resources.getDrawable(
+			view.background = ResourcesCompat.getDrawable(
+				this.resources,
 				when (completion) {
 					TaskStatus.BEYOND_COMPLETE -> R.color.taskBeyondComplete
 					TaskStatus.COMPLETE -> R.color.taskComplete
