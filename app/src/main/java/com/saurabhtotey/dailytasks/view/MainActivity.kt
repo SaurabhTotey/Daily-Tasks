@@ -1,6 +1,7 @@
 package com.saurabhtotey.dailytasks.view
 
 import android.app.DatePickerDialog
+import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.Rect
@@ -55,6 +56,7 @@ class MainActivity : AppCompatActivity() {
 		setContentView(R.layout.activity_main)
 
 		TaskDataController.initialize(this)
+		(this.applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).cancelAll()
 
 		//Populates the view with tasks
 		this.tasksRoot = this.findViewById(R.id.TaskContainer)

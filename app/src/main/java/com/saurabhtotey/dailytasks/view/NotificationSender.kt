@@ -42,12 +42,12 @@ class NotificationSender: BroadcastReceiver() {
 	private val notificationChannelId = "DailyTasksNotificationChannel"
 
 	/**
-	 * The method that is called hourly: sends a notification detailing the amount of remaining tasks
+	 * The method that is called every 6 hours: sends a notification detailing the amount of remaining tasks
 	 * and then schedules a notification for the next hour
 	 */
 	override fun onReceive(context: Context, intent: Intent?) {
 
-		//Schedules another notification for the next hour because notifications are recurring
+		//Schedules another notification for the next interval because notifications are recurring
 		scheduleNotification(context)
 
 		//Leaves if this is only being scheduled because of the phone booting up
