@@ -46,8 +46,6 @@ class MainActivity : AppCompatActivity() {
 			this.updateTaskViewsByCompletion()
 		}
 
-	private var shareButton: Button? = null
-
 	/**
 	 * Main entry point for the app
 	 */
@@ -89,11 +87,12 @@ class MainActivity : AppCompatActivity() {
 		}
 
 		//Sets up functionality for the sharing button
-		this.shareButton = this.findViewById(R.id.ShareButton);
-		this.shareButton!!.setOnClickListener {
+		val exportButton = this.findViewById(R.id.ExportButton) as Button;
+		exportButton.setOnClickListener {
 			val sharingIntent = Intent().apply {
 				this.action = Intent.ACTION_SEND
 				this.type = "text/json"
+				this.putExtra(Intent.EXTRA_TITLE, "DailyTaskData.json")
 				this.putExtra(Intent.EXTRA_TEXT, TaskDataController.fileString)
 			}
 			this.startActivity(Intent.createChooser(sharingIntent, "Your Daily Task Data"))
@@ -148,7 +147,6 @@ class MainActivity : AppCompatActivity() {
 					numberInput.setText("0")
 				}
 			}
-			//TODO: unfocus when keyboard is dismissed: this is difficult and is probably going to need https://stackoverflow.com/questions/3425932/detecting-when-user-has-dismissed-the-soft-keyboard
 		}
 
 		//Populates the subTaskContainer with the task's sub-tasks
