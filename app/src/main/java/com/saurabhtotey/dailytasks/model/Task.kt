@@ -20,6 +20,7 @@ package com.saurabhtotey.dailytasks.model
  *
  * TODO: consider passing in a date along with the array of integers to evaluateIsComplete so that the evaluation can account for the date
  * TODO: ideally these tasks would be encoded in some external format like a JSON file so they are more configurable, but that is difficult because tasks also need to specify their completion evaluation logic
+ * TODO: these strings should all go in the strings.xml file
  */
 enum class Task(val displayName: String, val description: String, val formType: FormType = FormType.CHECKBOX, val formDescription: String = "", val evaluateIsCompleted: (TaskValue) -> TaskStatus = { if (it.value > 0) TaskStatus.COMPLETE else TaskStatus.INCOMPLETE }, val subTasks: Array<Task> = arrayOf()) {
 	MEDITATE(
@@ -27,7 +28,7 @@ enum class Task(val displayName: String, val description: String, val formType: 
 		"Meditate for at least 5 minutes. Do not do this at the expense of sleep.",
 		FormType.POSITIVE_INTEGER,
 		"minutes",
-		generateCompletionFunctionBasedOnThresholds(15, 5, null, TaskStatus.INCOMPLETE)
+		generateCompletionFunctionBasedOnThresholds(15, 5, null)
 	),
 	SHOWER(
 		"Shower",
@@ -35,17 +36,17 @@ enum class Task(val displayName: String, val description: String, val formType: 
 	),
 	BRUSH_TEETH(
 		"Brush Teeth",
-		"Brush your teeth at least twice today.",
+		"Brush your teeth at least twice.",
 		FormType.POSITIVE_INTEGER,
 		"times",
-		generateCompletionFunctionBasedOnThresholds(null, 2, 1, TaskStatus.INCOMPLETE)
+		generateCompletionFunctionBasedOnThresholds(null, 2, 1)
 	),
-	PRACTICE(
-		"Practice Piano",
-		"Spend at least 30 minutes practicing the piano. If possible, also practice cello.",
+	PRACTICE_MUSIC(
+		"Practice Music",
+		"Spend at least 30 minutes practicing piano, cello, and/or music composition.",
 		FormType.POSITIVE_INTEGER,
 		"minutes",
-		generateCompletionFunctionBasedOnThresholds(60, 30, 1, TaskStatus.INCOMPLETE)
+		generateCompletionFunctionBasedOnThresholds(60, 30, 1)
 	),
 	EAT_HEALTHY("Eat Healthy Meals", "Eat healthy meals.", FormType.POSITIVE_INTEGER, "meals", { if (it.value >= 2) TaskStatus.BEYOND_COMPLETE else if (it.value == 1) TaskStatus.COMPLETE else TaskStatus.INCOMPLETE }),
 	EAT_MISCELLANEOUS("Eat Meals", "Eat meals.", FormType.POSITIVE_INTEGER, "meals", { TaskStatus.COMPLETION_IRRELEVANT }),
@@ -73,43 +74,26 @@ enum class Task(val displayName: String, val description: String, val formType: 
 		"Exercise for at least 30 minutes.",
 		FormType.POSITIVE_INTEGER,
 		"minutes",
-		generateCompletionFunctionBasedOnThresholds(60, 30, 1, TaskStatus.INCOMPLETE)
+		generateCompletionFunctionBasedOnThresholds(60, 30, 1)
 	),
-	COMMIT(
+	COMMIT_CODE(
 		"Commit Code",
-		"Commit a change on a git repository."
+		"Commit a change on a git repository. Professional work does not count."
 	),
-	LEARN_PHYSICS(
-		"Learn New Physics",
-		"Learn some new physics that you didn't know before."
+	LEARN_SCIENCE(
+		"Learn New Science",
+		"Learn some new science that you didn't know before."
 	),
-	SOLVE_PROBLEM(
-		"Solve a Problem",
-		"Solve any sort of problem. It could be homework, a personal problem, or anything else."
+	LEARN_LANGUAGE(
+		"Learn More Language",
+		"Learn more of a language that you don't speak natively."
 	),
-	TALK_NEW("Meet Someone", "Meet and talk with someone you don't know.", FormType.CHECKBOX, "", { if (it.value > 0) TaskStatus.COMPLETE else TaskStatus.COMPLETION_IRRELEVANT }),
-	TALK_QUESTION("Ask a Question", "Ask anyone any sort of question. It could be clarification, or asking for help, or anything else.", FormType.CHECKBOX, "", { if (it.value > 0) TaskStatus.COMPLETE else TaskStatus.COMPLETION_IRRELEVANT }),
-	TALK_SHARE("Share", "Share a story or a joke or any other sort of information about yourself.", FormType.CHECKBOX, "", { if (it.value > 0) TaskStatus.COMPLETE else TaskStatus.COMPLETION_IRRELEVANT }),
-	TALK(
-		"Talk",
-		"Either meet a new person, ask any sort of question, or share something about yourself.",
-		FormType.NONE,
-		"",
-		{
-			val subTaskValues = it.subTaskValues.sumBy { subTaskValue -> subTaskValue.value }
-			if (subTaskValues >= 2) TaskStatus.BEYOND_COMPLETE else if (subTaskValues == 1) TaskStatus.COMPLETE else TaskStatus.INCOMPLETE
-		},
-		arrayOf(TALK_NEW, TALK_QUESTION, TALK_SHARE)
+	BE_SOCIAL(
+		"Be Social",
+		"Engage in some sort of social activity or perform some sort of social behaviour."
 	),
 	JOURNAL(
 		"Write in Journal",
 		"Write about your day in your journal. Think a little bit about what has happened today and what you have done or not done."
 	),
-	PLANK(
-		"Plank",
-		"Plank with any plank form for at least 3 minutes (180 seconds), but go for 4 minutes if possible (240 seconds).",
-		FormType.POSITIVE_INTEGER,
-		"seconds",
-		generateCompletionFunctionBasedOnThresholds(240, 180, 1, TaskStatus.INCOMPLETE)
-	)
 }

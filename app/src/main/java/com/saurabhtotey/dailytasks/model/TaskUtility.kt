@@ -13,7 +13,7 @@ val primaryTasks: Array<Task> get() {
  * Allows tasks to specify thresholds for each TaskStatus (or null if that TaskStatus value shouldn't be achievable)
  * Assumes that non-null thresholds are given in descending order
  */
-fun generateCompletionFunctionBasedOnThresholds(beyondCompleteThreshold: Int?, completeThreshold: Int?, inProgressOrAttemptedThreshold: Int?, defaultValue: TaskStatus) : (TaskValue) -> TaskStatus {
+fun generateCompletionFunctionBasedOnThresholds(beyondCompleteThreshold: Int?, completeThreshold: Int?, inProgressOrAttemptedThreshold: Int?, defaultValue: TaskStatus = TaskStatus.INCOMPLETE) : (TaskValue) -> TaskStatus {
 	return {
 		if (beyondCompleteThreshold != null && it.value >= beyondCompleteThreshold) {
 			TaskStatus.BEYOND_COMPLETE
